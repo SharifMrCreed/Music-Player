@@ -19,18 +19,14 @@ public class PlayListFragment extends Fragment {
     RecyclerView rvPlaylist;
 
     ArrayList<ArrayList<MusicFile>> musicFiles = null;
-    String
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_playlists, container, false);
         rvPlaylist = view.findViewById(R.id.rv_playlist_fragment);
-        if (musicFiles == null){
 
-        }else{
-            initRecyclerView();
-        }
+        if (musicFiles != null) initRecyclerView();
 
         return view;
     }

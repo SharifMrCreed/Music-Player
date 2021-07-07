@@ -1,36 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/parent_card"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:background="@drawable/black_to_blue"
-    android:layout_margin="10dp">
+    android:layout_height="176dp"
+    android:layout_margin="4dp"
+    app:cardBackgroundColor="@color/grey_700"
+    app:cardCornerRadius="8dp">
+
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/album_item_parent"
-        android:layout_width="170dp"
-        android:layout_height="200dp"
+        android:layout_width="120dp"
+        android:layout_height="176dp"
         android:layout_gravity="center"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:background="@drawable/stroked_rectangle"
-        android:weightSum="20">
+        android:background="@color/black_t50"
+        android:orientation="vertical">
+
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/album_art"
-            android:layout_width="168dp"
-            android:layout_gravity="center"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layout_weight="19"/>
+            android:layout_width="118dp"
+            android:layout_height="140dp"
+            android:layout_gravity="center" />
+
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/album_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_gravity="center"
-            android:textStyle="bold"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginBottom="8dp"
             android:gravity="center"
             android:singleLine="true"
-            android:textColor="@color/white"
-            android:text="Album name"/>
+            android:textColor="@color/grey_200"
+            tools:text="Album name" />
     </androidx.appcompat.widget.LinearLayoutCompat>
 
 

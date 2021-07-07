@@ -2,7 +2,6 @@ package com.alle.san.musicplayer.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -24,12 +23,19 @@ import static com.alle.san.musicplayer.util.Globals.PLAY_SONG_FRAGMENT_TAG;
 public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapter.SongViewHolder> {
 
     ArrayList<MusicFile> songs;
+    ArrayList<MusicFile> filteredList;
     Context context;
     ViewChanger viewChanger;
 
     public SongRecyclerAdapter(ArrayList<MusicFile> songs, Context context) {
         this.songs = songs;
         this.context = context;
+    }
+
+    public void setSongs(ArrayList<MusicFile> songs) {
+        this.songs = new ArrayList<>();
+        this.songs = songs;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -77,22 +83,17 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
                 popupMenu.getMenuInflater().inflate(R.menu.song_popup_menu, popupMenu.getMenu());
                 popupMenu.show();
                 popupMenu.setOnMenuItemClickListener(item -> {
-                    switch (item.getItemId()){
-                        case R.id.pop_up_delete:
-                            delete();
-                            break;
-                        case R.id.pop_up_share:
-                            share();
-                            break;
-                        case R.id.pop_up_play:
-                            viewChanger.changeFragment(PLAY_SONG_FRAGMENT_TAG, songs, position);
-                            break;
-                        case R.id.pop_up_to_playlist:
-                            addToPlayList();
-                            break;
-                        case R.id.pop_up_details:
-                            showDetails();
-                            break;
+                    int itemId = item.getItemId();
+                    if (itemId == R.id.pop_up_delete) {
+                        delete();
+                    } else if (itemId == R.id.pop_up_share) {
+                        share();
+                    } else if (itemId == R.id.pop_up_play) {
+                        viewChanger.changeFragment(PLAY_SONG_FRAGMENT_TAG, songs, position);
+                    } else if (itemId == R.id.pop_up_to_playlist) {
+                        addToPlayList();
+                    } else if (itemId == R.id.pop_up_details) {
+                        showDetails();
                     }
                     return true;
                 });

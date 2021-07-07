@@ -7,4 +7,7 @@
     <string name="artist_name">Artist Name</string>
     <string name="off">OFF</string>
     <string name="artist">Artist name, album name</string>
+    <string name="_1_00">1:00</string>
+    <string name="_4_00">4:00</string>
+    <string name="search">Search...</string>
 </resources>

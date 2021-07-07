@@ -1,5 +1,6 @@
-package com.alle.san.musicplayer;
+ package com.alle.san.musicplayer;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -11,7 +12,11 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
 
 import com.alle.san.musicplayer.adapters.ViewPagerAdapter;
 import com.alle.san.musicplayer.models.MusicFile;
@@ -31,17 +36,18 @@ import static com.alle.san.musicplayer.util.Globals.SONG_LIST_FRAGMENT_TAG;
 public class MainActivity extends AppCompatActivity implements ViewChanger {
 
     private static final String TAG = "MainActivity";
-    private static final int AUDIO_REQUEST = 1;
     private static final int STORAGE_REQUEST =2;
-    private static final int STORAGE_REQUEST_WRITE = 3;
     int fragmentContainer;
 
     SongListFragment songListFragment = null;
     PlaySongFragment playSongFragment = null;
     AlbumSongListFragment albumSongListFragment= null;
+    EditText search;
 
     TabLayout tabLayout;
     ViewPager viewPager;
+    private ViewPagerAdapter viewPagerAdapter;
+    private Filter filter;
 
 
     @Override
@@ -51,20 +57,35 @@ public class MainActivity extends AppCompatActivity implements ViewChanger {
         fragmentContainer=R.id.fragment_container;
         tabLayout = findViewById(R.id.tab_layout);
         viewPager =  findViewById(R.id.view_pager);
-        checkPermissions();
-        if (songListFragment == null) {
-            songListFragment = new SongListFragment();
-        }
-        initViewPaging();
+        search =  findViewById(R.id.search_view);
+        initSearch();
+
+        if (checkPermissions()) initViewPaging();
     }
 
+
     private void initViewPaging() {
-        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
-        viewPagerAdapter.addFragments(songListFragment, SONGS);
+        viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+        viewPagerAdapter.addFragments(new SongListFragment(), SONGS);
         viewPagerAdapter.addFragments(new AlbumsFragment(), ALBUMS);
         viewPagerAdapter.addFragments(new PlayListFragment(), PLAYLIST);
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
+        filter = (Filter) viewPagerAdapter.getItem(0);
+        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener(){
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                if (positionOffset>0.5 && position == 0) search.setVisibility(View.GONE);
+                else if (position>0) search.setVisibility(View.GONE);
+                else search.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (position>0) search.setVisibility(View.GONE);
+                else search.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     private void initFragment(Fragment fragment, String tag) {
@@ -76,19 +97,22 @@ public class MainActivity extends AppCompatActivity implements ViewChanger {
     }
 
 
-    private void checkPermissions() {
+    private boolean checkPermissions() {
+        boolean readStorage = false;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, AUDIO_REQUEST);
-            }
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_REQUEST);
-            }
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_REQUEST_WRITE);
-            }
+            }else readStorage = true;
+
 
         }
+        return readStorage;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == STORAGE_REQUEST && grantResults[0] == PackageManager.PERMISSION_GRANTED) initViewPaging();
     }
 
     @Override
@@ -130,6 +154,25 @@ public class MainActivity extends AppCompatActivity implements ViewChanger {
     }
 
 
+    private void initSearch() {
+        search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                filter.filter(s.toString());
+
+            }
+        });
+    }
     @Override
     public void onBackPressed() {
         super.onBackPressed();

@@ -1,24 +1,25 @@
 package com.alle.san.musicplayer.adapters;
 
 import android.content.Context;
-import android.media.MediaMetadataRetriever;
-import android.net.Uri;
-import android.os.Environment;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.alle.san.musicplayer.R;
 import com.alle.san.musicplayer.models.MusicFile;
 import com.alle.san.musicplayer.util.ViewChanger;
 import com.bumptech.glide.Glide;
+import com.jackandphantom.blurimage.BlurImage;
 
 import java.util.ArrayList;
 
@@ -55,13 +56,15 @@ public class AlbumRvAdapter extends RecyclerView.Adapter<AlbumRvAdapter.AlbumVie
     public class AlbumViewHolder extends RecyclerView.ViewHolder{
         TextView albumName;
         ImageView albumImage;
-        LinearLayoutCompat parentLayout;
+        CardView cardView;
+        LinearLayoutCompat linearLayout;
 
         public AlbumViewHolder(@NonNull View itemView) {
             super(itemView);
             albumImage= itemView.findViewById(R.id.album_art);
             albumName= itemView.findViewById(R.id.album_name);
-            parentLayout= itemView.findViewById(R.id.album_item_parent);
+            linearLayout = itemView.findViewById(R.id.album_item_parent);
+            cardView = itemView.findViewById(R.id.parent_card);
         }
 
         public void bindAlbum(int position){
@@ -69,18 +72,22 @@ public class AlbumRvAdapter extends RecyclerView.Adapter<AlbumRvAdapter.AlbumVie
             MusicFile musicFile = albumSongs.get(0);
             imageRetriever(musicFile);
             albumName.setText(musicFile.getAlbum());
-            parentLayout.setOnClickListener(view-> viewChanger.changeFragment(ALBUM_SONG_LIST_FRAGMENT_TAG, albumSongs, position));
+            linearLayout.setOnClickListener(view-> viewChanger.changeFragment(ALBUM_SONG_LIST_FRAGMENT_TAG, albumSongs, position));
         }
 
 
         private void imageRetriever(MusicFile musicFile){
-            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-            retriever.setDataSource(context, Uri.parse(musicFile.getData()));
-            byte [] imageArt = retriever.getEmbeddedPicture();
-            if (imageArt != null){
-                Glide.with(context).asBitmap().load(imageArt).centerCrop().into(albumImage);
-            }else{
+            if (musicFile.getAlbumImage() != null) {
+                Glide.with(context).asBitmap().load(musicFile.getAlbumImage()).centerCrop().into(albumImage);
+                Bitmap bit = BlurImage.with(context.getApplicationContext()).load(musicFile.getAlbumImage()).intensity(20).Async(true).getImageBlur();
+                Drawable bitmapDrawable = new BitmapDrawable(context.getResources(), bit);
+                cardView.setBackground(bitmapDrawable);
+            }
+            else {
                 Glide.with(context).asBitmap().load(R.drawable.allecon).centerCrop().into(albumImage);
+                Bitmap bit = BlurImage.with(context.getApplicationContext()).load(R.drawable.allecon).intensity(20).Async(true).getImageBlur();
+                Drawable bitmapDrawable = new BitmapDrawable(context.getResources(), bit);
+                cardView.setBackground(bitmapDrawable);
             }
         }
     }

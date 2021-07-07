@@ -1,48 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginBottom="5dp"
     android:background="@color/black"
-    android:layout_marginStart="8dp"
-    android:layout_marginEnd="6dp"
-    android:layout_marginBottom="5dp">
+    app:cardBackgroundColor="@color/grey_900">
 
-    <LinearLayout
-        android:id="@+id/song_item"
-        android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/more_menu"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/black"
-        android:padding="10dp">
-
-        <TextView
-            android:id="@+id/song_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:text="@string/song_name"
-            android:textSize="17sp"/>
-        <TextView
-            android:id="@+id/artist_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/artist"
-            android:layout_marginStart="10dp"
-            android:textColor="@color/mediumDarkgrey"
-            android:textSize="14sp"/>
-
-    </LinearLayout>
-
-    <com.google.android.material.imageview.ShapeableImageView
-        android:id="@+id/more_menu"
-        android:layout_margin="6dp"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
+    <RelativeLayout
         android:layout_width="wrap_content"
-        android:layout_height="55dp"
-        android:src="@drawable/more_icon"/>
+        android:layout_height="wrap_content">
 
-</RelativeLayout>
+        <LinearLayout
+            android:id="@+id/song_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@+id/more_menu"
+            android:background="@color/grey_900"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/song_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="@string/song_name"
+                android:textSize="17sp" />
+
+            <TextView
+                android:id="@+id/artist_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="@string/artist"
+                android:textColor="@color/grey_500"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/more_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="55dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_margin="6dp"
+            android:src="@drawable/more_icon" />
+
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

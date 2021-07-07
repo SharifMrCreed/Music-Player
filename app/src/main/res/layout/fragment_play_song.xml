@@ -1,115 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/black_to_blue"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".PlaySongFragment"
-    android:orientation="vertical"
-    android:id="@+id/parent_layout">
+    android:background="@color/grey_900"
+    tools:context=".PlaySongFragment">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:id="@+id/parent_layout2"
+        android:layout_alignParentTop="true"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:id="@+id/parent_layout"
+        android:layout_alignParentBottom="true"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black_t50"
+        android:orientation="vertical">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/upper_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/back_Arrow"
-                android:clickable="true"
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
-                android:layout_gravity="center"
-                android:padding="10dp"
-                android:src="@drawable/arrow_back"
+                android:elevation="12dp"
+                app:cardCornerRadius="8dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners"
-                android:focusable="true"/>
+                app:layout_constraintTop_toTopOf="parent">
 
-            <LinearLayout
-                android:id="@+id/voice_control"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp"
-                android:gravity="center"
-                android:clickable="true"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/play_list"
-                app:layout_constraintStart_toEndOf="@+id/back_Arrow"
-                app:layout_constraintTop_toTopOf="parent"
-                android:orientation="horizontal"
-                android:focusable="true">
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:drawableStart="@drawable/mic_off_icon"
-                    android:text="@string/playing_now" />
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/voice_control_mode"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/off" />
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/back_Arrow"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="10dp"
+                    android:src="@drawable/arrow_back" />
+            </com.google.android.material.card.MaterialCardView>
 
-            </LinearLayout>
 
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/play_list"
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="10dp"
                 android:layout_marginBottom="10dp"
-                android:clickable="true"
-                android:elevation="40dp"
-                android:layout_gravity="center"
-                android:src="@drawable/menu_icon"
-                android:padding="10dp"
+                android:elevation="12dp"
+                app:cardCornerRadius="8dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners"
-                android:focusable="true"/>
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/play_list"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="10dp"
+                    android:src="@drawable/menu_icon"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
+
+            </com.google.android.material.card.MaterialCardView>
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <RelativeLayout
-            android:id="@+id/parent_card"
-            android:layout_width="match_parent"
-            android:layout_height="330dp"
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="320dp"
+            android:layout_height="320dp"
+            android:layout_gravity="center"
             android:layout_margin="20dp"
-            android:background="@drawable/shape_circle"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners"
-            android:elevation="40dp">
+            android:elevation="12dp"
+            app:cardCornerRadius="12dp">
 
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/album_photo"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="10dp"
-                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
-        </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/parent_card"
+                android:layout_width="320dp"
+                android:layout_height="320dp"
+                android:padding="10dp">
 
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/album_photo"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </RelativeLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/song_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:ellipsize="marquee"
             android:layout_gravity="center"
-            android:text="@string/song_name"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             android:layout_marginBottom="8dp"
-            android:textSize="30sp"
-            android:singleLine="true" />
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
+            android:text="@string/song_name"
+            android:textSize="30sp" />
+
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/artist_name"
             android:layout_width="wrap_content"
@@ -117,118 +125,142 @@
             android:layout_gravity="center"
             android:layout_marginBottom="25dp"
             android:gravity="center"
-            android:text="@string/artist_name"/>
+            android:text="@string/artist_name" />
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:layout_marginBottom="40dp"
             android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp">
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="40dp">
+
             <TextView
                 android:id="@+id/current_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
                 android:layout_alignParentStart="true"
-                android:text="1:00"/>
+                android:layout_margin="5dp"
+                android:text="@string/_1_00" />
+
             <TextView
                 android:id="@+id/total_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
                 android:layout_alignParentEnd="true"
-                android:text="4:00"/>
+                android:layout_margin="5dp"
+                android:text="@string/_4_00"
+                tools:ignore="RelativeOverlap" />
 
             <androidx.appcompat.widget.AppCompatSeekBar
                 android:id="@+id/seek_bar"
-                android:layout_alignParentBottom="true"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true" />
 
         </RelativeLayout>
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="70dp">
+            android:layout_marginBottom="32dp"
+            android:padding="12dp"
+            android:layout_height="wrap_content">
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/previous_button"
                 android:layout_width="55dp"
                 android:layout_height="55dp"
+                android:layout_gravity="center"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
                 android:clickable="true"
                 android:elevation="40dp"
                 android:focusable="true"
-                android:layout_gravity="center"
-                android:src="@drawable/rewind_icon"
                 android:padding="15dp"
+                android:src="@drawable/rewind_icon"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/pause_button"
+                app:layout_constraintEnd_toStartOf="@+id/pause"
                 app:layout_constraintStart_toEndOf="@+id/shuffle_button"
                 app:layout_constraintTop_toTopOf="parent"
-                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners"/>
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
 
-
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/pause_button"
-                android:layout_width="65dp"
-                android:layout_height="65dp"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/pause"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
-                android:background="@drawable/shape_circle"
-                android:clickable="true"
-                android:focusable="true"
+                android:elevation="12dp"
+                android:padding="1dp"
+                app:cardCornerRadius="32dp"
+                app:cardBackgroundColor="@android:color/transparent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/next_button"
                 app:layout_constraintStart_toEndOf="@+id/previous_button"
-                app:layout_constraintTop_toTopOf="parent"/>
+                app:layout_constraintTop_toTopOf="parent">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:background="@drawable/shape_circle">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/pause_button"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
+                        android:layout_centerInParent="true"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                </RelativeLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/next_button"
                 android:layout_width="55dp"
                 android:layout_height="55dp"
+                android:layout_gravity="center"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
                 android:clickable="true"
                 android:elevation="40dp"
                 android:focusable="true"
-                android:layout_gravity="center"
-                android:src="@drawable/next_icon"
                 android:padding="15dp"
+                android:src="@drawable/next_icon"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/repeat_button"
-                app:layout_constraintStart_toEndOf="@+id/pause_button"
+                app:layout_constraintStart_toEndOf="@+id/pause"
                 app:layout_constraintTop_toTopOf="parent"
-                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners"/>
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
 
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/repeat_button"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_gravity="center"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="24dp"
                 android:clickable="true"
                 android:elevation="40dp"
                 android:focusable="true"
-                android:layout_gravity="center"
-                android:src="@drawable/repeat_icon"
                 android:padding="10dp"
+                android:src="@drawable/repeat_icon"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/next_button"
                 app:layout_constraintTop_toTopOf="parent"
-                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners"/>
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
 
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/shuffle_button"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_gravity="center"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="4dp"
@@ -237,14 +269,15 @@
                 android:elevation="40dp"
                 android:focusable="true"
                 android:padding="10dp"
-                android:layout_gravity="center"
                 android:src="@drawable/shuffle_icon"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/previous_button"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners"/>
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-</LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

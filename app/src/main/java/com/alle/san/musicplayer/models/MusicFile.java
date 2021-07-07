@@ -5,6 +5,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class MusicFile implements Parcelable {
+    String _id;
     String title;
     String album;
     String data;
@@ -13,6 +14,7 @@ public class MusicFile implements Parcelable {
     Bitmap albumImage;
 
     protected MusicFile(Parcel in) {
+        _id = in.readString();
         title = in.readString();
         album = in.readString();
         data = in.readString();
@@ -47,10 +49,11 @@ public class MusicFile implements Parcelable {
     public MusicFile() {
     }
 
-    public MusicFile(String title, String album, String data, String artist, int duration) {
+    public MusicFile(String _id, String title, String album, String data, String artist, int duration) {
         this.title = title;
         this.album = album;
         this.data = data;
+        this._id = _id;
         this.artist = artist;
         this.duration = duration;
     }
@@ -68,6 +71,10 @@ public class MusicFile implements Parcelable {
 
     public Bitmap getAlbumImage() {
         return albumImage;
+    }
+
+    public String get_id() {
+        return _id;
     }
 
     public void setAlbumImage(Bitmap albumImage) {
@@ -111,6 +118,7 @@ public class MusicFile implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(_id);
         parcel.writeString(title);
         parcel.writeString(album);
         parcel.writeString(data);

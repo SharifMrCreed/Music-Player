@@ -8,4 +8,7 @@ public interface ViewChanger {
 
     void changeFragment(String tag, ArrayList<MusicFile> songs, int position);
     void onBackPressed();
+    interface Filter{
+        void filter(String s);
+    }
 }

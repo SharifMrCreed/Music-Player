@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
 
 import com.alle.san.musicplayer.models.MusicFile;
@@ -58,8 +59,11 @@ public class ReadExternalStorage {
 
     public static ArrayList<MusicFile> getSongsFromStorage(Context context){
         ArrayList<MusicFile> musicFiles = new ArrayList<>();
-        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        Uri uri;
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) uri = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL);
+        else uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         String[] projection = new String[]{
+                MediaStore.Audio.Media._ID,
                 MediaStore.Audio.Media.TITLE,
                 MediaStore.Audio.Media.ALBUM,
                 MediaStore.Audio.Media.DURATION,
@@ -71,13 +75,16 @@ public class ReadExternalStorage {
         if(cursor != null){
             while (cursor.moveToNext()){
                 String songName = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+                String songID = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
                 String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
-                int duration = Integer.parseInt(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)));
+                String duration = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
                 String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
                 String data = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
 
                 String title = delimitTitle(songName) ;
-                MusicFile musicFile = new MusicFile(title, album, data, artist, duration);
+                int length;
+                if (duration == null) length = 0; else length = Integer.parseInt(duration);
+                MusicFile musicFile = new MusicFile(songID, title, album, data, artist, length);
                 musicFiles.add(musicFile);
 
             }

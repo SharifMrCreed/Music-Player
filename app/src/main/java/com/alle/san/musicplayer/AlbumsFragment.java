@@ -1,5 +1,9 @@
 package com.alle.san.musicplayer;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -11,10 +15,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.alle.san.musicplayer.adapters.AlbumRvAdapter;
 import com.alle.san.musicplayer.models.MusicFile;
 import com.alle.san.musicplayer.util.ReadExternalStorage;
+import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,18 +45,32 @@ public class AlbumsFragment extends Fragment {
     private void initRecyclerView() {
         ArrayList<MusicFile> allSongs = ReadExternalStorage.getSongsFromStorage(getContext());
         sortAlbums(allSongs);
-        rvAlbumList.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        rvAlbumList.setLayoutManager(new GridLayoutManager(getContext(), 3));
         rvAlbumList.setAdapter(new AlbumRvAdapter(getContext(), allAlbums));
     }
 
     private void sortAlbums(ArrayList<MusicFile> allSongs) {
         ArrayList<MusicFile> albumSongs = new ArrayList<>();
-        if (i < allSongs.size()){
+        if (i < allSongs.size()) {
             String albumName = allSongs.get(i).getAlbum();
-            if (!(albumNames.contains(albumName))){
-                for (MusicFile musicFile: allSongs){
-                    if ((musicFile.getAlbum()).equals(albumName)){
+            if (!(albumNames.contains(albumName))) {
+                for (MusicFile musicFile : allSongs) {
+                    if ((musicFile.getAlbum()).equals(albumName)) {
                         albumSongs.add(musicFile);
+                        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+                        try {
+                            retriever.setDataSource(getContext(), Uri.parse(musicFile.getData()));
+                            byte[] imageArt = retriever.getEmbeddedPicture();
+                            Bitmap albumImage;
+                            if (imageArt != null)
+                                albumImage = BitmapFactory.decodeByteArray(imageArt, 0, imageArt.length);
+                            else albumImage = null;
+                            musicFile.setAlbumImage(albumImage);
+                        } catch (IllegalArgumentException | SecurityException iE) {
+                            Toast.makeText(getContext(), "Song Error", Toast.LENGTH_SHORT).show();
+                            Log.d("Retriever", "sortAlbums: "+ iE.toString());
+
+                        }
                     }
                 }
                 albumNames.add(albumName);
