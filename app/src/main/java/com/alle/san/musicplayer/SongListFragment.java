@@ -15,7 +15,7 @@ import com.alle.san.musicplayer.util.UtilInterfaces;
 
 import java.util.ArrayList;
 
-import static com.alle.san.musicplayer.util.ReadExternalStorage.getSongsFromStorage;
+import static com.alle.san.musicplayer.util.StorageUtil.getSongsFromStorage;
 
 public class SongListFragment extends Fragment implements UtilInterfaces.Filter {
 

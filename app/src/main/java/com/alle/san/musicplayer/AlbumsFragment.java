@@ -8,7 +8,6 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
@@ -19,8 +18,7 @@ import android.widget.Toast;
 
 import com.alle.san.musicplayer.adapters.AlbumRvAdapter;
 import com.alle.san.musicplayer.models.MusicFile;
-import com.alle.san.musicplayer.util.ReadExternalStorage;
-import com.bumptech.glide.Glide;
+import com.alle.san.musicplayer.util.StorageUtil;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -43,7 +41,7 @@ public class AlbumsFragment extends Fragment {
     }
 
     private void initRecyclerView() {
-        ArrayList<MusicFile> allSongs = ReadExternalStorage.getSongsFromStorage(getContext());
+        ArrayList<MusicFile> allSongs = StorageUtil.getSongsFromStorage(getContext());
         sortAlbums(allSongs);
         rvAlbumList.setLayoutManager(new GridLayoutManager(getContext(), 3));
         rvAlbumList.setAdapter(new AlbumRvAdapter(getContext(), allAlbums));

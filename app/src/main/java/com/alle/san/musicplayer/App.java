@@ -15,7 +15,7 @@ public class App extends Application {
         super.onCreate();
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel channel1 = new NotificationChannel(
-                    MUSIC_CHANNEL, MUSIC_PLAYER_NOTIFICATION_CONTROL, NotificationManager.IMPORTANCE_HIGH
+                    MUSIC_CHANNEL, MUSIC_PLAYER_NOTIFICATION_CONTROL, NotificationManager.IMPORTANCE_LOW
             );
             NotificationChannel channel2 = new NotificationChannel(
                     NOTIFICATION_CHANNEL, PLAYER_NOTIFICATION, NotificationManager.IMPORTANCE_HIGH

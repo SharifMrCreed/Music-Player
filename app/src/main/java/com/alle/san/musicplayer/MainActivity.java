@@ -22,7 +22,7 @@ import android.widget.EditText;
 import com.alle.san.musicplayer.adapters.ViewPagerAdapter;
 import com.alle.san.musicplayer.models.MusicFile;
 import com.alle.san.musicplayer.util.Globals;
-import com.alle.san.musicplayer.util.ReadExternalStorage;
+import com.alle.san.musicplayer.util.StorageUtil;
 import com.alle.san.musicplayer.util.UtilInterfaces;
 import com.google.android.material.tabs.TabLayout;
 
@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
                 else if (position>0) search.setVisibility(View.GONE);
                 else {
                     search.setVisibility(View.VISIBLE);
-                    allMusic.addAll(ReadExternalStorage.getSongsFromStorage(MainActivity.this));
+                    allMusic.addAll(StorageUtil.getSongsFromStorage(MainActivity.this));
                 }
             }
 
@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
                 if (position>0) search.setVisibility(View.GONE);
                 else {
                     search.setVisibility(View.VISIBLE);
-                    allMusic.addAll(ReadExternalStorage.getSongsFromStorage(MainActivity.this));
+                    allMusic.addAll(StorageUtil.getSongsFromStorage(MainActivity.this));
                 }
             }
         });

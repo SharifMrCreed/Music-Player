@@ -1,5 +1,7 @@
 package com.alle.san.musicplayer;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -9,10 +11,14 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.media.MediaMetadataRetriever;
-import android.media.MediaPlayer;
+import android.media.session.MediaSessionManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.RemoteException;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -21,39 +27,51 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.palette.graphics.Palette;
 
 import com.alle.san.musicplayer.models.MusicFile;
-import com.alle.san.musicplayer.util.Globals;
 import com.alle.san.musicplayer.util.MusicService;
-import com.alle.san.musicplayer.util.ReadExternalStorage;
+import com.alle.san.musicplayer.util.PlaybackStatus;
 import com.alle.san.musicplayer.util.UtilInterfaces;
 import com.bumptech.glide.Glide;
 import com.jackandphantom.blurimage.BlurImage;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Random;
 
 import static com.alle.san.musicplayer.MainActivity.allMusic;
+import static com.alle.san.musicplayer.util.Globals.ACTION_NEXT;
+import static com.alle.san.musicplayer.util.Globals.ACTION_PAUSE;
+import static com.alle.san.musicplayer.util.Globals.ACTION_PLAY;
+import static com.alle.san.musicplayer.util.Globals.ACTION_PREVIOUS;
+import static com.alle.san.musicplayer.util.Globals.ACTION_STOP;
 import static com.alle.san.musicplayer.util.Globals.ADAPTER_POSITION;
+import static com.alle.san.musicplayer.util.Globals.MUSIC_CHANNEL;
+import static com.alle.san.musicplayer.util.Globals.NOTIFICATION_ID;
 
-public class PlaySongActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener, UtilInterfaces.Buttons,
-        ServiceConnection {
+public class PlaySongActivity extends AppCompatActivity implements UtilInterfaces.Buttons, ServiceConnection {
 
     TextView songName, artistName, currentTime, albumName, totalTime;
     RelativeLayout parentLayout, parentLayout2, linearLayout;
     SeekBar seekBar;
     RelativeLayout parentCard;
     ImageView nextButton, previousButton, shuffleButton, backButton, repeatButton, albumImage, pauseButton, listButton;
+
     ArrayList<MusicFile> songs;
     MusicService musicService;
     MusicFile song;
     Handler handler = new Handler();
+    private MediaSessionManager mediaSessionManager;
+    private MediaSessionCompat mediaSession;
+    private MediaControllerCompat.TransportControls transportControls;
+
     boolean shuffle, repeat;
 
     int position;
-    int play = 1;
+    private Bitmap albumArt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +100,7 @@ public class PlaySongActivity extends AppCompatActivity implements MediaPlayer.O
         songs = allMusic;
         position = getIntent().getIntExtra(ADAPTER_POSITION, 0);
         song = songs.get(position);
+        albumArt = albumBitmap(song.getData());
         shuffle = false;
         repeat = false;
 
@@ -153,15 +172,12 @@ public class PlaySongActivity extends AppCompatActivity implements MediaPlayer.O
     }
 
     public void songPlayPause() {
-        if (musicService != null && play == 1) {
-            play = 0;
+        if (musicService != null && musicService.isPlaying()) {
             musicService.pause();
-
             Glide.with(this).load(R.drawable.play_icon).into(pauseButton);
-        } else if (musicService != null && play == 0) {
-            play = 1;
+        } else if (musicService != null && !musicService.isPlaying()) {
             musicService.start();
-            Glide.with(this).load(R.drawable.pause_icon).into(pauseButton);
+            Glide.with(this).load(android.R.drawable.ic_media_pause).into(pauseButton);
         } else {
             playSong(songs.get(position));
         }
@@ -210,6 +226,9 @@ public class PlaySongActivity extends AppCompatActivity implements MediaPlayer.O
     }
 
     public void playSong(MusicFile currentSong) {
+        song = currentSong;
+        albumArt = albumBitmap(currentSong.getData());
+        albumArt = albumBitmap(currentSong.getData());
         songName.setText(currentSong.getTitle());
         artistName.setText(currentSong.getArtist());
         albumName.setText(currentSong.getAlbum());
@@ -227,29 +246,34 @@ public class PlaySongActivity extends AppCompatActivity implements MediaPlayer.O
                 handler.postDelayed(this, 1000);
             }
         });
+        Glide.with(this).asBitmap().load(albumArt).centerCrop().into(albumImage);
+        makePaletteFrom(albumArt);
 
-        byte[] image = getAlbumArt(currentSong.getData());
+        Glide.with(this).load(android.R.drawable.ic_media_pause).into(pauseButton);
 
-        if (image != null) {
-            Glide.with(this).asBitmap().load(image).centerCrop().into(albumImage);
-            Bitmap art = BitmapFactory.decodeByteArray(image, 0, image.length);
-            makePaletteFrom(art);
-
-        } else {
-            Glide.with(this).load(R.drawable.allecon).centerCrop().into(albumImage);
-            Bitmap bitmap = ((BitmapDrawable) ContextCompat.getDrawable(this, R.drawable.allecon)).getBitmap();
-            makePaletteFrom(bitmap);
+        if (mediaSessionManager == null) {
+            try {
+                initMediaSession();
+                Intent serviceIntent = new Intent(this, MusicService.class);
+                serviceIntent.putExtra(ADAPTER_POSITION, position);
+                startService(serviceIntent);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+            buildNotification(PlaybackStatus.PLAYING);
         }
-        Glide.with(this).load(R.drawable.pause_icon).into(pauseButton);
-        Intent serviceIntent = new Intent(this, MusicService.class);
-        serviceIntent.putExtra(ADAPTER_POSITION, position);
-        startService(serviceIntent);
+    }
 
+    private Bitmap albumBitmap(String dataPath) {
+        byte[] image = getAlbumArt(dataPath);
+        if (image != null) return BitmapFactory.decodeByteArray(image, 0, image.length);
+        else
+            return ((BitmapDrawable) Objects.requireNonNull(ContextCompat.getDrawable(this, R.drawable.allecon))).getBitmap();
     }
 
     private String timeFormat(int playtime) {
         String hoursT = playtime / 60 > 60 ? String.valueOf(playtime / 3600) : null;
-        String minutesT = playtime/60 > 60? String.valueOf((playtime /60) % 60) : String.valueOf(playtime / 60);
+        String minutesT = playtime / 60 > 60 ? String.valueOf((playtime / 60) % 60) : String.valueOf(playtime / 60);
         String secondsT = String.valueOf(playtime % 60);
         String timeT;
         if (hoursT == null)
@@ -292,18 +316,159 @@ public class PlaySongActivity extends AppCompatActivity implements MediaPlayer.O
         });
     }
 
-    void bindMusicService(ServiceConnection serviceConnection) {
-        Intent serviceIntent= new Intent(this, MusicService.class);
-        bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE);
+    private void initMediaSession() throws RemoteException {
+        if (mediaSessionManager != null) return; //mediaSessionManager exists
+        mediaSessionManager = (MediaSessionManager) getSystemService(MEDIA_SESSION_SERVICE);
+        // Create a new MediaSession
+        mediaSession = new MediaSessionCompat(getApplicationContext(), "AudioPlayer");
+        //Get MediaSessions transport controls
+        transportControls = mediaSession.getController().getTransportControls();
+        //set MediaSession -> ready to receive media commands
+        mediaSession.setActive(true);
+        //indicate that the MediaSession handles transport control commands
+        // through its MediaSessionCompat.Callback.
+        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+        updateMetaData();
+
+        // Attach Callback to receive MediaSession updates
+        mediaSession.setCallback(new MediaSessionCompat.Callback() {
+            // Implement callbacks
+            @Override
+            public void onPlay() {
+                super.onPlay();
+                songPlayPause();
+                buildNotification(PlaybackStatus.PLAYING);
+            }
+
+            @Override
+            public void onPause() {
+                super.onPause();
+                songPlayPause();
+                buildNotification(PlaybackStatus.PAUSED);
+            }
+
+            @Override
+            public void onSkipToNext() {
+                super.onSkipToNext();
+                playNextSong();
+                updateMetaData();
+                buildNotification(PlaybackStatus.PLAYING);
+            }
+
+            @Override
+            public void onSkipToPrevious() {
+                super.onSkipToPrevious();
+                playPreviousSong();
+                updateMetaData();
+                buildNotification(PlaybackStatus.PLAYING);
+            }
+
+            @Override
+            public void onStop() {
+                super.onStop();
+                removeNotification();
+                //Stop the service
+                musicService.stopSelf();
+            }
+
+            @Override
+            public void onSeekTo(long position) {
+                super.onSeekTo(position);
+            }
+        });
     }
 
-    @Override
-    public void onCompletion(MediaPlayer mediaPlayer) {
-        if (repeat) {
-            playSong(songs.get(position));
-        } else {
-            playNextSong();
+    private void updateMetaData() {
+        mediaSession.setMetadata(new MediaMetadataCompat.Builder()
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
+                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, song.getArtist())
+                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, song.getAlbum())
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.getTitle())
+                .build());
+    }
+
+    public void buildNotification(PlaybackStatus playbackStatus) {
+        int notificationAction = android.R.drawable.ic_media_pause;//needs to be initialized
+        PendingIntent play_pauseAction = null;
+        //Build a new notification according to the current state of the MediaPlayer
+        if (playbackStatus == PlaybackStatus.PLAYING) {
+            //create the pause action
+            play_pauseAction = playbackAction(1);
+        } else if (playbackStatus == PlaybackStatus.PAUSED) {
+            notificationAction = R.drawable.play_icon;
+            //create the play action
+            play_pauseAction = playbackAction(0);
         }
+
+        // Create a new Notification
+        NotificationCompat.Builder notificationBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(this, MUSIC_CHANNEL)
+                .setShowWhen(false)
+                // Set the Notification style
+                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
+                        // Attach our MediaSession token
+                        .setMediaSession(mediaSession.getSessionToken())
+                        // Show our playback controls in the compact notification view.
+                        .setShowActionsInCompactView(0, 1, 2))
+                // Set the Notification color
+                .setColor(getResources().getColor(R.color.colorPrimary, getTheme()))
+                // Set the large and small icons
+                .setLargeIcon(albumArt)
+                .setSmallIcon(android.R.drawable.stat_sys_headset)
+                // Set Notification content information
+                .setContentText(song.getArtist())
+                .setContentTitle(song.getAlbum())
+                .setContentInfo(song.getTitle())
+                // Add playback actions
+                .addAction(R.drawable.rewind_icon, "previous", playbackAction(3))
+                .addAction(notificationAction, "pause", play_pauseAction)
+                .addAction(R.drawable.next_icon, "next", playbackAction(2));
+
+        ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, notificationBuilder.build());
+    }
+
+    public void removeNotification() {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.cancel(NOTIFICATION_ID);
+    }
+
+    private PendingIntent playbackAction(int actionNumber) {
+        Intent playbackAction = new Intent(this, MusicService.class);
+        switch (actionNumber) {
+            case 0:
+                // Play
+                playbackAction.setAction(ACTION_PLAY);
+                return PendingIntent.getService(this, actionNumber, playbackAction, 0);
+            case 1:
+                // Pause
+                playbackAction.setAction(ACTION_PAUSE);
+                return PendingIntent.getService(this, actionNumber, playbackAction, 0);
+            case 2:
+                // Next track
+                playbackAction.setAction(ACTION_NEXT);
+                return PendingIntent.getService(this, actionNumber, playbackAction, 0);
+            case 3:
+                // Previous track
+                playbackAction.setAction(ACTION_PREVIOUS);
+                return PendingIntent.getService(this, actionNumber, playbackAction, 0);
+            default:
+                break;
+        }
+        return null;
+    }
+
+    public void handleIncomingActions(Intent playbackAction) {
+        if (playbackAction == null || playbackAction.getAction() == null) return;
+        String actionString = playbackAction.getAction();
+        if (actionString.equalsIgnoreCase(ACTION_PLAY)) transportControls.play();
+        else if (actionString.equalsIgnoreCase(ACTION_PAUSE)) transportControls.pause();
+        else if (actionString.equalsIgnoreCase(ACTION_NEXT)) transportControls.skipToNext();
+        else if (actionString.equalsIgnoreCase(ACTION_PREVIOUS)) transportControls.skipToPrevious();
+        else if (actionString.equalsIgnoreCase(ACTION_STOP)) transportControls.stop();
+    }
+
+    void bindMusicService(ServiceConnection serviceConnection) {
+        Intent serviceIntent = new Intent(this, MusicService.class);
+        bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE);
     }
 
     @Override
