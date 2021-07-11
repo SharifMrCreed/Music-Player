@@ -6,30 +6,32 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/grey_900"
-    tools:context=".PlaySongFragment">
+    tools:context=".PlaySongActivity">
+
 
     <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
         android:id="@+id/parent_layout2"
-        android:layout_alignParentTop="true"/>
-
-    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="30dp"
-        android:id="@+id/parent_layout"
-        android:layout_alignParentBottom="true"/>
+        android:layout_alignParentTop="true" />
 
-    <LinearLayout
+    <RelativeLayout
+        android:id="@+id/parent_layout"
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:layout_alignParentBottom="true" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/black_t50"
+        android:background="@color/black_t30"
         android:orientation="vertical">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/upper_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent">
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="40dp"
@@ -38,6 +40,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
                 android:elevation="12dp"
+                app:cardBackgroundColor="@color/white_t10"
                 app:cardCornerRadius="8dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -45,12 +48,11 @@
 
                 <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/back_Arrow"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
                     android:layout_gravity="center"
                     android:clickable="true"
                     android:focusable="true"
-                    android:padding="10dp"
                     android:src="@drawable/arrow_back" />
             </com.google.android.material.card.MaterialCardView>
 
@@ -62,6 +64,7 @@
                 android:layout_marginEnd="10dp"
                 android:layout_marginBottom="10dp"
                 android:elevation="12dp"
+                app:cardBackgroundColor="@color/white_t10"
                 app:cardCornerRadius="8dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -69,14 +72,12 @@
 
                 <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/play_list"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
                     android:layout_gravity="center"
                     android:clickable="true"
                     android:focusable="true"
-                    android:padding="10dp"
-                    android:src="@drawable/menu_icon"
-                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
+                    android:src="@drawable/menu_icon"/>
 
             </com.google.android.material.card.MaterialCardView>
 
@@ -89,12 +90,18 @@
             android:layout_gravity="center"
             android:layout_margin="20dp"
             android:elevation="12dp"
-            app:cardCornerRadius="12dp">
+            app:cardBackgroundColor="@color/white_t30"
+            app:cardCornerRadius="12dp"
+            app:layout_constraintBottom_toTopOf="@id/song_name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/upper_layout">
 
             <RelativeLayout
                 android:id="@+id/parent_card"
                 android:layout_width="320dp"
                 android:layout_height="320dp"
+                android:background="@color/white_t30"
                 android:padding="10dp">
 
                 <com.google.android.material.imageview.ShapeableImageView
@@ -106,33 +113,58 @@
 
         <TextView
             android:id="@+id/song_name"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginStart="32dp"
             android:layout_marginBottom="8dp"
             android:ellipsize="marquee"
             android:marqueeRepeatLimit="marquee_forever"
             android:singleLine="true"
+            android:maxLines="1"
             android:text="@string/song_name"
-            android:textSize="30sp" />
+            android:textSize="30sp"
+            app:layout_constraintBottom_toTopOf="@id/artist_name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/artist_name"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:maxLines="1"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/artist_name"
+            app:layout_constraintBottom_toTopOf="@id/album_name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/album_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:maxLines="1"
             android:layout_marginBottom="25dp"
-            android:gravity="center"
-            android:text="@string/artist_name" />
+            android:text="@string/artist_name"
+            app:layout_constraintBottom_toTopOf="@id/second_last"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <RelativeLayout
+            android:id="@+id/second_last"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:layout_marginBottom="40dp">
+            android:layout_marginBottom="40dp"
+            app:layout_constraintBottom_toTopOf="@id/bottom_layout">
 
             <TextView
                 android:id="@+id/current_time"
@@ -161,10 +193,12 @@
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/bottom_layout"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="32dp"
             android:padding="12dp"
-            android:layout_height="wrap_content">
+            app:layout_constraintBottom_toBottomOf="parent">
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/previous_button"
@@ -192,8 +226,8 @@
                 android:layout_marginEnd="4dp"
                 android:elevation="12dp"
                 android:padding="1dp"
+                app:cardBackgroundColor="@color/black_t30"
                 app:cardCornerRadius="32dp"
-                app:cardBackgroundColor="@android:color/transparent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/next_button"
                 app:layout_constraintStart_toEndOf="@+id/previous_button"
@@ -278,6 +312,6 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </RelativeLayout>

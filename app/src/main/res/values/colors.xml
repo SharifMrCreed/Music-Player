@@ -6,9 +6,12 @@
     <color name="orange_600">#92FB9F00</color>
     <color name="orange_t50">#34FB9F00</color>
     <color name="white">#ffffff</color>
+    <color name="white_t10">#1AFFFFFF</color>
+    <color name="white_t30">#4DFFFFFF</color>
     <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
     <color name="black_t50">#80000000</color>
+    <color name="black_t30">#4D000000</color>
     <color name="grey_200">#C4C6C6</color>
     <color name="grey_500">#72C4C6C6</color>
     <color name="grey_700">#292929</color>

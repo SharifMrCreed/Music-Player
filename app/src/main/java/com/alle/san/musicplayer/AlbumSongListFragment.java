@@ -57,8 +57,9 @@ public class AlbumSongListFragment extends Fragment {
         super.onCreate(savedInstanceState);
         context = getContext();
         Bundle bundle = this.getArguments();
-        if (bundle != null){
+        if (bundle != null) {
             albumSongs = bundle.getParcelableArrayList(ALBUMS);
+            bundle.clear();
 
         }
     }
@@ -66,7 +67,7 @@ public class AlbumSongListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view  = inflater.inflate(R.layout.fragment_album_song_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_album_song_list, container, false);
         recyclerView = view.findViewById(R.id.rv_album_song_list);
         albumToolBar = view.findViewById(R.id.albumToolbar);
         albumPhoto = view.findViewById(R.id.album_photo);
@@ -86,46 +87,50 @@ public class AlbumSongListFragment extends Fragment {
 
     }
 
-    private void imageRetriever(MusicFile musicFile){
+    private void imageRetriever(MusicFile musicFile) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        byte [] imageArt;
+        byte[] imageArt;
         try {
             retriever.setDataSource(getContext(), Uri.parse(musicFile.getData()));
             imageArt = retriever.getEmbeddedPicture();
-        }catch (IllegalArgumentException | SecurityException iE){
+        } catch (IllegalArgumentException | SecurityException iE) {
             Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
             imageArt = null;
         }
-        if (imageArt != null){
+        Bitmap bit;
+        Bitmap bitmap;
+        if (imageArt != null) {
             Glide.with(context).asBitmap().load(imageArt).centerCrop().into(albumPhoto);
-            Bitmap bitmap = BitmapFactory.decodeByteArray(imageArt, 0, imageArt.length);
-            Bitmap bit = BlurImage.with(context.getApplicationContext()).load(bitmap).intensity(20).Async(true).getImageBlur();
-            Drawable bitmapDrawable = new BitmapDrawable(getResources(), bit);
-            parentLayout.setBackground(bitmapDrawable);
-
-//            Palette.from(bitmap).generate(palette -> {
-//                Palette.Swatch swatchDominant = palette.getDominantSwatch();
-//                Palette.Swatch swatchMuted = palette.getMutedSwatch();
-//                if (swatchDominant == null){
-//                    GradientDrawable gradientDraw = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, new int[]{swatchDominant.getRgb(), Color.BLACK});
-//                    recyclerView.setBackground(gradientDraw);
-//                }
-//                if (swatchMuted == null){
-//                    GradientDrawable gradientDraw = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, new int[]{swatchMuted.getRgb(), swatchMuted.getRgb()});
-//                    collapsingToolbarLayout.setContentScrim(gradientDraw);
-//                    albumToolBar.setTitleTextColor(swatchMuted.getTitleTextColor());
-//                }else if (swatchDominant == null){
-//                    GradientDrawable gradientDraw = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, new int[]{swatchMuted.getRgb(), swatchMuted.getRgb()});
-//                    collapsingToolbarLayout.setContentScrim(gradientDraw);
-//                    albumToolBar.setTitleTextColor(swatchDominant.getTitleTextColor());
-//                }
-//            });
-        }else{
+            bitmap = BitmapFactory.decodeByteArray(imageArt, 0, imageArt.length);
+            bit = BlurImage.with(context.getApplicationContext()).load(bitmap).intensity(20).Async(true).getImageBlur();
+        } else {
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.allecon);
             Glide.with(context).asBitmap().load(R.drawable.allecon).centerCrop().into(albumPhoto);
-            Bitmap bit = BlurImage.with(context.getApplicationContext()).load(R.drawable.allecon).intensity(20).Async(true).getImageBlur();
-            Drawable bitmapDrawable = new BitmapDrawable(getResources(), bit);
-            parentLayout.setBackground(bitmapDrawable);
+            bit = BlurImage.with(context.getApplicationContext()).load(R.drawable.allecon).intensity(20).Async(true).getImageBlur();
         }
+
+        Drawable bitmapDrawable = new BitmapDrawable(getResources(), bit);
+        parentLayout.setBackground(bitmapDrawable);
+        Palette.from(bitmap).generate(palette -> {
+            Palette.Swatch swatchDominant = palette.getDominantSwatch();
+            Palette.Swatch swatchMuted = palette.getMutedSwatch();
+            if (swatchDominant != null) {
+                GradientDrawable gradientDraw = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, new int[]{swatchDominant.getRgb(), Color.BLACK});
+                collapsingToolbarLayout.setContentScrim(gradientDraw);
+                collapsingToolbarLayout.setTitleEnabled(true);
+                collapsingToolbarLayout.setCollapsedTitleTextColor(swatchDominant.getTitleTextColor());
+                collapsingToolbarLayout.setExpandedTitleColor(swatchDominant.getTitleTextColor());
+                getActivity().getWindow().setStatusBarColor(swatchDominant.getRgb());
+            } else if (swatchMuted != null) {
+                GradientDrawable gradientDraw = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, new int[]{swatchMuted.getRgb(), swatchMuted.getRgb()});
+                collapsingToolbarLayout.setContentScrim(gradientDraw);
+                collapsingToolbarLayout.setTitleEnabled(true);
+                collapsingToolbarLayout.setCollapsedTitleTextColor(swatchDominant.getTitleTextColor());
+                collapsingToolbarLayout.setExpandedTitleColor(swatchDominant.getTitleTextColor());
+                getActivity().getWindow().setStatusBarColor(swatchMuted.getRgb());
+            }
+        });
+
 
     }
 }

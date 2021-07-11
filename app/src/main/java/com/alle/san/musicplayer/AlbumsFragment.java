@@ -30,7 +30,7 @@ public class AlbumsFragment extends Fragment {
     RecyclerView rvAlbumList;
     int i = 0;
     private final ArrayList<ArrayList<MusicFile>> allAlbums = new ArrayList<>();
-    HashSet<String> albumNames = new HashSet<String>();
+    HashSet<String> albumNames = new HashSet<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -66,7 +66,7 @@ public class AlbumsFragment extends Fragment {
                                 albumImage = BitmapFactory.decodeByteArray(imageArt, 0, imageArt.length);
                             else albumImage = null;
                             musicFile.setAlbumImage(albumImage);
-                        } catch (IllegalArgumentException | SecurityException iE) {
+                        } catch (Exception iE) {
                             Toast.makeText(getContext(), "Song Error", Toast.LENGTH_SHORT).show();
                             Log.d("Retriever", "sortAlbums: "+ iE.toString());
 
@@ -80,7 +80,5 @@ public class AlbumsFragment extends Fragment {
             i++;
             sortAlbums(allSongs);
         }
-
-        Log.d("sortAlbums: ", String.valueOf(allAlbums.size()));
     }
 }

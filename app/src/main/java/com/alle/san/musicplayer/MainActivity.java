@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager.widget.ViewPager;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,7 +22,8 @@ import android.widget.EditText;
 import com.alle.san.musicplayer.adapters.ViewPagerAdapter;
 import com.alle.san.musicplayer.models.MusicFile;
 import com.alle.san.musicplayer.util.Globals;
-import com.alle.san.musicplayer.util.ViewChanger;
+import com.alle.san.musicplayer.util.ReadExternalStorage;
+import com.alle.san.musicplayer.util.UtilInterfaces;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
@@ -33,21 +35,21 @@ import static com.alle.san.musicplayer.util.Globals.PLAYLIST;
 import static com.alle.san.musicplayer.util.Globals.SONGS;
 import static com.alle.san.musicplayer.util.Globals.SONG_LIST_FRAGMENT_TAG;
 
-public class MainActivity extends AppCompatActivity implements ViewChanger {
+public class MainActivity extends AppCompatActivity implements UtilInterfaces.ViewChanger{
 
     private static final String TAG = "MainActivity";
     private static final int STORAGE_REQUEST =2;
+    public static ArrayList<MusicFile> allMusic = new ArrayList<>();
     int fragmentContainer;
 
     SongListFragment songListFragment = null;
-    PlaySongFragment playSongFragment = null;
     AlbumSongListFragment albumSongListFragment= null;
     EditText search;
 
     TabLayout tabLayout;
     ViewPager viewPager;
-    private ViewPagerAdapter viewPagerAdapter;
-    private Filter filter;
+    private UtilInterfaces.Filter filter;
+    private TextWatcher textWatcher;
 
 
     @Override
@@ -58,32 +60,37 @@ public class MainActivity extends AppCompatActivity implements ViewChanger {
         tabLayout = findViewById(R.id.tab_layout);
         viewPager =  findViewById(R.id.view_pager);
         search =  findViewById(R.id.search_view);
-        initSearch();
 
         if (checkPermissions()) initViewPaging();
     }
 
 
     private void initViewPaging() {
-        viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         viewPagerAdapter.addFragments(new SongListFragment(), SONGS);
         viewPagerAdapter.addFragments(new AlbumsFragment(), ALBUMS);
         viewPagerAdapter.addFragments(new PlayListFragment(), PLAYLIST);
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
-        filter = (Filter) viewPagerAdapter.getItem(0);
+        filter = (UtilInterfaces.Filter) viewPagerAdapter.getItem(0);
         viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener(){
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 if (positionOffset>0.5 && position == 0) search.setVisibility(View.GONE);
                 else if (position>0) search.setVisibility(View.GONE);
-                else search.setVisibility(View.VISIBLE);
+                else {
+                    search.setVisibility(View.VISIBLE);
+                    allMusic.addAll(ReadExternalStorage.getSongsFromStorage(MainActivity.this));
+                }
             }
 
             @Override
             public void onPageSelected(int position) {
                 if (position>0) search.setVisibility(View.GONE);
-                else search.setVisibility(View.VISIBLE);
+                else {
+                    search.setVisibility(View.VISIBLE);
+                    allMusic.addAll(ReadExternalStorage.getSongsFromStorage(MainActivity.this));
+                }
             }
         });
     }
@@ -117,17 +124,13 @@ public class MainActivity extends AppCompatActivity implements ViewChanger {
 
     @Override
     public void changeFragment(String tag, ArrayList<MusicFile> songs, int position) {
-        switch (tag) {
-            case Globals.PLAY_SONG_FRAGMENT_TAG: {
-                if (playSongFragment == null) {
-                    playSongFragment = new PlaySongFragment();
-                }
-                Bundle args = new Bundle();
-                args.putInt(Globals.ADAPTER_POSITION, position);
-                args.putParcelableArrayList(Globals.SONGS_LIST, songs);
-                playSongFragment.setArguments(args);
-                initFragment(playSongFragment, tag);
 
+        switch (tag) {
+            case Globals.PLAY_SONG_ACTIVITY_TAG: {
+                Intent intent = new Intent(this, PlaySongActivity.class);
+                intent.putExtra(Globals.ADAPTER_POSITION, position);
+                startActivity(intent);
+                allMusic = songs;
                 break;
             }
             case SONG_LIST_FRAGMENT_TAG:
@@ -137,9 +140,6 @@ public class MainActivity extends AppCompatActivity implements ViewChanger {
                 initFragment(songListFragment, tag);
                 break;
             case ALBUM_SONG_LIST_FRAGMENT_TAG: {
-                if (songListFragment == null) {
-                    songListFragment = new SongListFragment();
-                }
                 if (albumSongListFragment == null) {
                     albumSongListFragment = new AlbumSongListFragment();
                 }
@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements ViewChanger {
 
 
     private void initSearch() {
-        search.addTextChangedListener(new TextWatcher() {
+        textWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -168,13 +168,31 @@ public class MainActivity extends AppCompatActivity implements ViewChanger {
 
             @Override
             public void afterTextChanged(Editable s) {
-                filter.filter(s.toString());
+                filter.filter(s.toString().toLowerCase());
 
             }
-        });
+        };
+        search.addTextChangedListener(textWatcher);
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        search.removeTextChangedListener(textWatcher);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        initSearch();
+    }
+
     @Override
     public void onBackPressed() {
+        this.getWindow().setStatusBarColor(getColor(R.color.grey_700));
         super.onBackPressed();
     }
+
+
+
 }

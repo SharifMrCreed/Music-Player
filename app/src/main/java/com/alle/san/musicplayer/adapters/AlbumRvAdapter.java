@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.alle.san.musicplayer.R;
 import com.alle.san.musicplayer.models.MusicFile;
-import com.alle.san.musicplayer.util.ViewChanger;
+import com.alle.san.musicplayer.util.UtilInterfaces;
 import com.bumptech.glide.Glide;
 import com.jackandphantom.blurimage.BlurImage;
 
@@ -29,7 +29,7 @@ public class AlbumRvAdapter extends RecyclerView.Adapter<AlbumRvAdapter.AlbumVie
 
     Context context;
     ArrayList <ArrayList<MusicFile>> albums;
-    ViewChanger viewChanger;
+    UtilInterfaces.ViewChanger utilInterfaces;
 
     public AlbumRvAdapter(Context context, ArrayList<ArrayList<MusicFile>> albums) {
         this.context = context;
@@ -72,7 +72,7 @@ public class AlbumRvAdapter extends RecyclerView.Adapter<AlbumRvAdapter.AlbumVie
             MusicFile musicFile = albumSongs.get(0);
             imageRetriever(musicFile);
             albumName.setText(musicFile.getAlbum());
-            linearLayout.setOnClickListener(view-> viewChanger.changeFragment(ALBUM_SONG_LIST_FRAGMENT_TAG, albumSongs, position));
+            linearLayout.setOnClickListener(view-> utilInterfaces.changeFragment(ALBUM_SONG_LIST_FRAGMENT_TAG, albumSongs, position));
         }
 
 
@@ -95,6 +95,6 @@ public class AlbumRvAdapter extends RecyclerView.Adapter<AlbumRvAdapter.AlbumVie
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
-        viewChanger = (ViewChanger)context;
+        utilInterfaces = (UtilInterfaces.ViewChanger)context;
     }
 }

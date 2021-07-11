@@ -11,17 +11,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.alle.san.musicplayer.adapters.SongRecyclerAdapter;
 import com.alle.san.musicplayer.models.MusicFile;
-import com.alle.san.musicplayer.util.ViewChanger;
+import com.alle.san.musicplayer.util.UtilInterfaces;
 
 import java.util.ArrayList;
 
 import static com.alle.san.musicplayer.util.ReadExternalStorage.getSongsFromStorage;
 
-public class SongListFragment extends Fragment implements ViewChanger.Filter {
+public class SongListFragment extends Fragment implements UtilInterfaces.Filter {
 
     RecyclerView recyclerView;
     SongRecyclerAdapter songRecyclerAdapter;
-    private ArrayList<MusicFile> songs;
+    private ArrayList<MusicFile> songs = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -37,10 +37,6 @@ public class SongListFragment extends Fragment implements ViewChanger.Filter {
 
 
     private void displaySongNames() {
-//        TODO:
-//        for (MusicFile musicFile: songs){
-//            musicFile.setAlbumImage(getBitmap(musicFile.getData()));
-//        }
         recyclerView.setAdapter(songRecyclerAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
 
@@ -49,7 +45,7 @@ public class SongListFragment extends Fragment implements ViewChanger.Filter {
     @Override
     public void filter(String s) {
         ArrayList<MusicFile> newList = new ArrayList<>();
-        for (MusicFile musicFile : songs) if (musicFile.getTitle().contains(s)) newList.add(musicFile);
+        for (MusicFile musicFile : songs) if (musicFile.getTitle().toLowerCase().contains(s)) newList.add(musicFile);
         songRecyclerAdapter.setSongs(newList);
     }
 }

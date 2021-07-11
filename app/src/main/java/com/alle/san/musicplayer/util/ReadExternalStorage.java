@@ -8,6 +8,7 @@ import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 
 import com.alle.san.musicplayer.models.MusicFile;
 
@@ -84,8 +85,10 @@ public class ReadExternalStorage {
                 String title = delimitTitle(songName) ;
                 int length;
                 if (duration == null) length = 0; else length = Integer.parseInt(duration);
-                MusicFile musicFile = new MusicFile(songID, title, album, data, artist, length);
-                musicFiles.add(musicFile);
+                if (length>45000){
+                    MusicFile musicFile = new MusicFile(songID, title, album, data, artist, length);
+                    musicFiles.add(musicFile);
+                }
 
             }
             cursor.close();
@@ -99,8 +102,7 @@ public class ReadExternalStorage {
         byte [] imageArt = retriever.getEmbeddedPicture();
         retriever.release();
         if (imageArt != null){
-            Bitmap bitmap = BitmapFactory.decodeByteArray(imageArt, 0, imageArt.length);
-            return bitmap;
+            return BitmapFactory.decodeByteArray(imageArt, 0, imageArt.length);
         }else {
             return null;
         }
@@ -108,11 +110,13 @@ public class ReadExternalStorage {
 
     public static String delimitTitle(String songName){
         String newTitle = "";
-        if(songName.contains("(")){
+        if(songName.contains("(")| songName.contains("[")){
             String[] splitRes = songName.split(" ",15);
             StringBuilder buildSongName = new StringBuilder();
             for (String splitRe : splitRes) {
                 if (splitRe.contains("(")) {
+                    break;
+                } else if (splitRe.contains("[")) {
                     break;
                 } else {
                     buildSongName.append(splitRe).append(" ");
@@ -129,6 +133,11 @@ public class ReadExternalStorage {
                     buildSongName.append(splitRe).append(" ");
                 }
             }
+            newTitle = buildSongName.toString();
+        }else if(songName.contains("_") && !songName.contains(" ")){
+            String[] splitRes = songName.split("_",15);
+            StringBuilder buildSongName = new StringBuilder();
+            for (String splitRe : splitRes) buildSongName.append(splitRe).append(" ");
             newTitle = buildSongName.toString();
         }else {
             newTitle = songName;

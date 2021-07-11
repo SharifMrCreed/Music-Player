@@ -5,7 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,18 +14,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.alle.san.musicplayer.R;
 import com.alle.san.musicplayer.models.MusicFile;
-import com.alle.san.musicplayer.util.ViewChanger;
+import com.alle.san.musicplayer.util.UtilInterfaces;
 
 import java.util.ArrayList;
 
-import static com.alle.san.musicplayer.util.Globals.PLAY_SONG_FRAGMENT_TAG;
+import static com.alle.san.musicplayer.util.Globals.PLAY_SONG_ACTIVITY_TAG;
 
 public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapter.SongViewHolder> {
 
     ArrayList<MusicFile> songs;
-    ArrayList<MusicFile> filteredList;
     Context context;
-    ViewChanger viewChanger;
+    UtilInterfaces.ViewChanger utilInterfaces;
 
     public SongRecyclerAdapter(ArrayList<MusicFile> songs, Context context) {
         this.songs = songs;
@@ -56,10 +55,10 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
     }
 
 
-    public class SongViewHolder extends RecyclerView.ViewHolder{
+    public class SongViewHolder extends RecyclerView.ViewHolder {
 
         TextView songName, artistName;
-        LinearLayout songItem;
+        RelativeLayout songItem;
         ImageView moreIcon;
 
         public SongViewHolder(@NonNull View itemView) {
@@ -70,13 +69,13 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
             moreIcon = itemView.findViewById(R.id.more_menu);
         }
 
-        public void Bind(final int position){
+        public void Bind(final int position) {
             MusicFile song = songs.get(position);
             songName.setText(song.getTitle());
             artistName.setText(song.getArtist());
             songItem.setOnClickListener(view -> {
-                //view.setBackground(context.getDrawable(R.drawable.stroked_rectangle));
-                viewChanger.changeFragment(PLAY_SONG_FRAGMENT_TAG, songs, position);
+//                view.setBackgroundResource(R.drawable.stroked_rectangle);
+                utilInterfaces.changeFragment(PLAY_SONG_ACTIVITY_TAG, songs, position);
             });
             moreIcon.setOnClickListener(view -> {
                 PopupMenu popupMenu = new PopupMenu(context, view);
@@ -89,7 +88,7 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
                     } else if (itemId == R.id.pop_up_share) {
                         share();
                     } else if (itemId == R.id.pop_up_play) {
-                        viewChanger.changeFragment(PLAY_SONG_FRAGMENT_TAG, songs, position);
+                        utilInterfaces.changeFragment(PLAY_SONG_ACTIVITY_TAG, songs, position);
                     } else if (itemId == R.id.pop_up_to_playlist) {
                         addToPlayList();
                     } else if (itemId == R.id.pop_up_details) {
@@ -118,6 +117,6 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
-        viewChanger = (ViewChanger) context;
+        utilInterfaces = (UtilInterfaces.ViewChanger) context;
     }
 }
