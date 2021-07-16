@@ -1,6 +1,7 @@
 package com.alle.san.musicplayer;
 
 import android.app.Application;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 
@@ -15,11 +16,14 @@ public class App extends Application {
         super.onCreate();
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel channel1 = new NotificationChannel(
-                    MUSIC_CHANNEL, MUSIC_PLAYER_NOTIFICATION_CONTROL, NotificationManager.IMPORTANCE_LOW
+                    MUSIC_CHANNEL, MUSIC_PLAYER_NOTIFICATION_CONTROL, NotificationManager.IMPORTANCE_HIGH
             );
             NotificationChannel channel2 = new NotificationChannel(
                     NOTIFICATION_CHANNEL, PLAYER_NOTIFICATION, NotificationManager.IMPORTANCE_HIGH
             );
+            channel1.enableVibration(false);
+            channel1.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            channel1.enableLights(false);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel1);
             notificationManager.createNotificationChannel(channel2);

@@ -15,7 +15,6 @@ import android.media.session.MediaSessionManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -34,6 +33,7 @@ import androidx.palette.graphics.Palette;
 import com.alle.san.musicplayer.models.MusicFile;
 import com.alle.san.musicplayer.util.MusicService;
 import com.alle.san.musicplayer.util.PlaybackStatus;
+import com.alle.san.musicplayer.util.StorageUtil;
 import com.alle.san.musicplayer.util.UtilInterfaces;
 import com.bumptech.glide.Glide;
 import com.jackandphantom.blurimage.BlurImage;
@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Random;
 
-import static com.alle.san.musicplayer.MainActivity.allMusic;
 import static com.alle.san.musicplayer.util.Globals.ACTION_NEXT;
 import static com.alle.san.musicplayer.util.Globals.ACTION_PAUSE;
 import static com.alle.san.musicplayer.util.Globals.ACTION_PLAY;
@@ -51,6 +50,7 @@ import static com.alle.san.musicplayer.util.Globals.ACTION_STOP;
 import static com.alle.san.musicplayer.util.Globals.ADAPTER_POSITION;
 import static com.alle.san.musicplayer.util.Globals.MUSIC_CHANNEL;
 import static com.alle.san.musicplayer.util.Globals.NOTIFICATION_ID;
+import static com.alle.san.musicplayer.util.Globals.SONGS;
 
 public class PlaySongActivity extends AppCompatActivity implements UtilInterfaces.Buttons, ServiceConnection {
 
@@ -97,7 +97,8 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
         shuffleButton = findViewById(R.id.shuffle_button);
 
         //initialize Variables
-        songs = allMusic;
+        songs = getIntent().getParcelableArrayListExtra(SONGS);
+        StorageUtil.storeAudio(songs, getApplicationContext());
         position = getIntent().getIntExtra(ADAPTER_POSITION, 0);
         song = songs.get(position);
         albumArt = albumBitmap(song.getData());
@@ -225,43 +226,43 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
         playSong(songs.get(position));
     }
 
-    public void playSong(MusicFile currentSong) {
-        song = currentSong;
-        albumArt = albumBitmap(currentSong.getData());
-        albumArt = albumBitmap(currentSong.getData());
-        songName.setText(currentSong.getTitle());
-        artistName.setText(currentSong.getArtist());
-        albumName.setText(currentSong.getAlbum());
-        seekBar.setMax(currentSong.getDuration() / 1000);
-        totalTime.setText(timeFormat(currentSong.getDuration() / 1000));
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (musicService != null) {
-                    int playtime = musicService.getCurrentPosition() / 1000;
-                    seekBar.setProgress(playtime);
-                    currentTime.setText(timeFormat(playtime));
+    void loadViews(MusicFile currentSong) {
+        if (!this.isDestroyed()) {
+            albumArt = albumBitmap(currentSong.getData());
+            albumArt = albumBitmap(currentSong.getData());
+            songName.setText(currentSong.getTitle());
+            artistName.setText(currentSong.getArtist());
+            albumName.setText(currentSong.getAlbum());
+            seekBar.setMax(currentSong.getDuration() / 1000);
+            totalTime.setText(timeFormat(currentSong.getDuration() / 1000));
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (musicService != null) {
+                        int playtime = musicService.getCurrentPosition() / 1000;
+                        seekBar.setProgress(playtime);
+                        currentTime.setText(timeFormat(playtime));
+                    }
+                    handler.postDelayed(this, 1000);
                 }
-                handler.postDelayed(this, 1000);
-            }
-        });
-        Glide.with(this).asBitmap().load(albumArt).centerCrop().into(albumImage);
-        makePaletteFrom(albumArt);
+            });
 
-        Glide.with(this).load(android.R.drawable.ic_media_pause).into(pauseButton);
+            Glide.with(this).asBitmap().load(albumArt).centerCrop().into(albumImage);
+            makePaletteFrom(albumArt);
 
-        if (mediaSessionManager == null) {
-            try {
-                initMediaSession();
-                Intent serviceIntent = new Intent(this, MusicService.class);
-                serviceIntent.putExtra(ADAPTER_POSITION, position);
-                startService(serviceIntent);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-            buildNotification(PlaybackStatus.PLAYING);
+            Glide.with(this).load(android.R.drawable.ic_media_pause).into(pauseButton);
         }
+    }
+
+    public void playSong(MusicFile currentSong) {
+
+        loadViews(currentSong);
+
+        if (mediaSessionManager == null) initMediaSession();
+        Intent serviceIntent = new Intent(this, MusicService.class);
+        serviceIntent.putExtra(ADAPTER_POSITION, position);
+        startService(serviceIntent);
+        buildNotification(PlaybackStatus.PLAYING);
     }
 
     private Bitmap albumBitmap(String dataPath) {
@@ -316,23 +317,16 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
         });
     }
 
-    private void initMediaSession() throws RemoteException {
-        if (mediaSessionManager != null) return; //mediaSessionManager exists
+    private void initMediaSession() {
         mediaSessionManager = (MediaSessionManager) getSystemService(MEDIA_SESSION_SERVICE);
-        // Create a new MediaSession
         mediaSession = new MediaSessionCompat(getApplicationContext(), "AudioPlayer");
-        //Get MediaSessions transport controls
         transportControls = mediaSession.getController().getTransportControls();
-        //set MediaSession -> ready to receive media commands
         mediaSession.setActive(true);
-        //indicate that the MediaSession handles transport control commands
-        // through its MediaSessionCompat.Callback.
         mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
         updateMetaData();
 
         // Attach Callback to receive MediaSession updates
         mediaSession.setCallback(new MediaSessionCompat.Callback() {
-            // Implement callbacks
             @Override
             public void onPlay() {
                 super.onPlay();
@@ -392,33 +386,26 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
         PendingIntent play_pauseAction = null;
         //Build a new notification according to the current state of the MediaPlayer
         if (playbackStatus == PlaybackStatus.PLAYING) {
-            //create the pause action
             play_pauseAction = playbackAction(1);
         } else if (playbackStatus == PlaybackStatus.PAUSED) {
             notificationAction = R.drawable.play_icon;
-            //create the play action
             play_pauseAction = playbackAction(0);
         }
 
         // Create a new Notification
-        NotificationCompat.Builder notificationBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(this, MUSIC_CHANNEL)
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, MUSIC_CHANNEL)
                 .setShowWhen(false)
-                // Set the Notification style
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
-                        // Attach our MediaSession token
                         .setMediaSession(mediaSession.getSessionToken())
-                        // Show our playback controls in the compact notification view.
                         .setShowActionsInCompactView(0, 1, 2))
-                // Set the Notification color
                 .setColor(getResources().getColor(R.color.colorPrimary, getTheme()))
-                // Set the large and small icons
                 .setLargeIcon(albumArt)
                 .setSmallIcon(android.R.drawable.stat_sys_headset)
-                // Set Notification content information
+                .setOnlyAlertOnce(true)
+                .setSilent(true)
                 .setContentText(song.getArtist())
                 .setContentTitle(song.getAlbum())
                 .setContentInfo(song.getTitle())
-                // Add playback actions
                 .addAction(R.drawable.rewind_icon, "previous", playbackAction(3))
                 .addAction(notificationAction, "pause", play_pauseAction)
                 .addAction(R.drawable.next_icon, "next", playbackAction(2));

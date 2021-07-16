@@ -13,8 +13,6 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
 import androidx.palette.graphics.Palette;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,21 +22,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.MultiAutoCompleteTextView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.alle.san.musicplayer.adapters.SongRecyclerAdapter;
+import com.alle.san.musicplayer.models.ArtistModel;
 import com.alle.san.musicplayer.models.MusicFile;
+import com.alle.san.musicplayer.util.StorageUtil;
 import com.bumptech.glide.Glide;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
-import com.google.android.material.appbar.MaterialToolbar;
 import com.jackandphantom.blurimage.BlurImage;
 
 import java.util.ArrayList;
 
-import static com.alle.san.musicplayer.util.Globals.ADAPTER_POSITION;
-import static com.alle.san.musicplayer.util.Globals.ALBUMS;
+import static com.alle.san.musicplayer.util.Globals.ALBUMS_FRAGMENT_TAG;
+import static com.alle.san.musicplayer.util.Globals.STRING_EXTRA;
 
 
 public class AlbumSongListFragment extends Fragment {
@@ -50,7 +48,9 @@ public class AlbumSongListFragment extends Fragment {
     Context context;
     CollapsingToolbarLayout collapsingToolbarLayout;
 
-    ArrayList<MusicFile> albumSongs = new ArrayList<>();
+    MusicFile song;
+    ArtistModel artist;
+    String extra;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -58,7 +58,9 @@ public class AlbumSongListFragment extends Fragment {
         context = getContext();
         Bundle bundle = this.getArguments();
         if (bundle != null) {
-            albumSongs = bundle.getParcelableArrayList(ALBUMS);
+            extra = bundle.getString(STRING_EXTRA);
+            if (extra.equals(ALBUMS_FRAGMENT_TAG)) song = bundle.getParcelable(ALBUMS_FRAGMENT_TAG);
+            else artist = bundle.getParcelable(ALBUMS_FRAGMENT_TAG);
             bundle.clear();
 
         }
@@ -80,11 +82,35 @@ public class AlbumSongListFragment extends Fragment {
     }
 
     private void initView() {
-        imageRetriever(albumSongs.get(0));
-        albumToolBar.setTitle(albumSongs.get(0).getAlbum());
-        recyclerView.setAdapter(new SongRecyclerAdapter(albumSongs, getContext()));
+        if (extra.equals(ALBUMS_FRAGMENT_TAG)){
+            imageRetriever(song);
+            albumToolBar.setTitle(song.getAlbum());
+        }
+        else {
+            imageArtistRetriever(artist);
+            albumToolBar.setTitle(artist.getName());
+        }
+        if (extra.equals(ALBUMS_FRAGMENT_TAG))
+            recyclerView.setAdapter(new SongRecyclerAdapter(getAlbumSongs(), getContext()));
+        else recyclerView.setAdapter(new SongRecyclerAdapter(getArtistSongs(), getContext()));
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
 
+    }
+
+    private ArrayList<MusicFile> getAlbumSongs() {
+        ArrayList<MusicFile> allSongs = StorageUtil.getSongsFromStorage(context);
+        ArrayList<MusicFile> album = new ArrayList<>();
+        for (MusicFile musicFile : allSongs)
+            if (musicFile.getAlbum().equals(song.getAlbum())) album.add(musicFile);
+        return album;
+    }
+
+    private ArrayList<MusicFile> getArtistSongs() {
+        ArrayList<MusicFile> allSongs = StorageUtil.getSongsFromStorage(context);
+        ArrayList<MusicFile> artists = new ArrayList<>();
+        for (MusicFile musicFile : allSongs)
+            if (musicFile.getArtist().equals(artist.getName())) artists.add(musicFile);
+        return artists;
     }
 
     private void imageRetriever(MusicFile musicFile) {
@@ -130,7 +156,43 @@ public class AlbumSongListFragment extends Fragment {
                 getActivity().getWindow().setStatusBarColor(swatchMuted.getRgb());
             }
         });
-
-
     }
+
+    private void imageArtistRetriever(ArtistModel musicFile) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        Bitmap bit;
+        Bitmap bitmap = musicFile.getPic1();
+        if (bitmap != null) {
+            Glide.with(context).asBitmap().load(bitmap).centerCrop().into(albumPhoto);
+            bit = BlurImage.with(context.getApplicationContext()).load(bitmap).intensity(20).Async(true).getImageBlur();
+        } else {
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.allecon);
+            Glide.with(context).asBitmap().load(R.drawable.allecon).centerCrop().into(albumPhoto);
+            bit = BlurImage.with(context.getApplicationContext()).load(R.drawable.allecon).intensity(20).Async(true).getImageBlur();
+        }
+
+        Drawable bitmapDrawable = new BitmapDrawable(getResources(), bit);
+        parentLayout.setBackground(bitmapDrawable);
+        Palette.from(bitmap).generate(palette -> {
+            Palette.Swatch swatchDominant = palette.getDominantSwatch();
+            Palette.Swatch swatchMuted = palette.getMutedSwatch();
+            if (swatchDominant != null) {
+                GradientDrawable gradientDraw = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, new int[]{swatchDominant.getRgb(), Color.BLACK});
+                collapsingToolbarLayout.setContentScrim(gradientDraw);
+                collapsingToolbarLayout.setTitleEnabled(true);
+                collapsingToolbarLayout.setCollapsedTitleTextColor(swatchDominant.getTitleTextColor());
+                collapsingToolbarLayout.setExpandedTitleColor(swatchDominant.getTitleTextColor());
+                getActivity().getWindow().setStatusBarColor(swatchDominant.getRgb());
+            } else if (swatchMuted != null) {
+                GradientDrawable gradientDraw = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, new int[]{swatchMuted.getRgb(), swatchMuted.getRgb()});
+                collapsingToolbarLayout.setContentScrim(gradientDraw);
+                collapsingToolbarLayout.setTitleEnabled(true);
+                collapsingToolbarLayout.setCollapsedTitleTextColor(swatchDominant.getTitleTextColor());
+                collapsingToolbarLayout.setExpandedTitleColor(swatchDominant.getTitleTextColor());
+                getActivity().getWindow().setStatusBarColor(swatchMuted.getRgb());
+            }
+        });
+    }
+
+
 }

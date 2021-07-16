@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.Objects;
+
 public class MusicFile implements Parcelable {
     String _id;
     String title;
@@ -109,6 +111,23 @@ public class MusicFile implements Parcelable {
                 ", artist: '" + artist + '\'' +
                 ", duration: '" + duration + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MusicFile)) return false;
+        MusicFile musicFile = (MusicFile) o;
+        return getDuration() == musicFile.getDuration() &&
+                getTitle().equals(musicFile.getTitle()) &&
+                getAlbum().equals(musicFile.getAlbum()) &&
+                getData().equals(musicFile.getData()) &&
+                getArtist().equals(musicFile.getArtist());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getTitle(), getAlbum(), getData(), getArtist(), getDuration());
     }
 
     @Override

@@ -45,7 +45,10 @@ public class SongListFragment extends Fragment implements UtilInterfaces.Filter 
     @Override
     public void filter(String s) {
         ArrayList<MusicFile> newList = new ArrayList<>();
-        for (MusicFile musicFile : songs) if (musicFile.getTitle().toLowerCase().contains(s)) newList.add(musicFile);
+        for (MusicFile musicFile : songs) {
+            if (musicFile.getTitle().toLowerCase().contains(s)) newList.add(musicFile);
+            else if (musicFile.getArtist().toLowerCase().contains(s)) newList.add(musicFile);
+        }
         songRecyclerAdapter.setSongs(newList);
     }
 }

@@ -23,24 +23,29 @@ import com.jackandphantom.blurimage.BlurImage;
 
 import java.util.ArrayList;
 
+import static com.alle.san.musicplayer.util.Globals.ALBUMS_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.ALBUM_SONG_LIST_FRAGMENT_TAG;
 
 public class AlbumRvAdapter extends RecyclerView.Adapter<AlbumRvAdapter.AlbumViewHolder> {
 
     Context context;
-    ArrayList <ArrayList<MusicFile>> albums;
+    ArrayList<MusicFile> albums = new ArrayList<>();
     UtilInterfaces.ViewChanger utilInterfaces;
 
-    public AlbumRvAdapter(Context context, ArrayList<ArrayList<MusicFile>> albums) {
+    public AlbumRvAdapter(Context context) {
         this.context = context;
+    }
+
+    public void setAlbums(ArrayList<MusicFile> albums) {
         this.albums = albums;
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public AlbumViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.rv_album_item, parent, false);
-        return new AlbumViewHolder(view);
+        return new AlbumViewHolder(view, albums, utilInterfaces, context);
     }
 
     @Override
@@ -53,48 +58,46 @@ public class AlbumRvAdapter extends RecyclerView.Adapter<AlbumRvAdapter.AlbumVie
         return albums.size();
     }
 
-    public class AlbumViewHolder extends RecyclerView.ViewHolder{
+    public static class AlbumViewHolder extends RecyclerView.ViewHolder {
         TextView albumName;
         ImageView albumImage;
         CardView cardView;
         LinearLayoutCompat linearLayout;
+        ArrayList<MusicFile> albums;
+        Context context;
+        UtilInterfaces.ViewChanger utilInterfaces;
 
-        public AlbumViewHolder(@NonNull View itemView) {
+        public AlbumViewHolder(@NonNull View itemView, ArrayList<MusicFile> albums, UtilInterfaces.ViewChanger utilInterfaces, Context context) {
             super(itemView);
-            albumImage= itemView.findViewById(R.id.album_art);
-            albumName= itemView.findViewById(R.id.album_name);
+            this.albums = albums;
+            this.utilInterfaces = utilInterfaces;
+            this.context = context;
+            albumImage = itemView.findViewById(R.id.album_art);
+            albumName = itemView.findViewById(R.id.album_name);
             linearLayout = itemView.findViewById(R.id.album_item_parent);
             cardView = itemView.findViewById(R.id.parent_card);
         }
 
-        public void bindAlbum(int position){
-            ArrayList<MusicFile> albumSongs = albums.get(position);
-            MusicFile musicFile = albumSongs.get(0);
+        public void bindAlbum(int position) {
+            MusicFile musicFile = albums.get(position);
             imageRetriever(musicFile);
             albumName.setText(musicFile.getAlbum());
-            linearLayout.setOnClickListener(view-> utilInterfaces.changeFragment(ALBUM_SONG_LIST_FRAGMENT_TAG, albumSongs, position));
+            linearLayout.setOnClickListener(view -> utilInterfaces.changeFragment(musicFile, ALBUMS_FRAGMENT_TAG));
         }
 
 
-        private void imageRetriever(MusicFile musicFile){
-            if (musicFile.getAlbumImage() != null) {
-                Glide.with(context).asBitmap().load(musicFile.getAlbumImage()).centerCrop().into(albumImage);
-                Bitmap bit = BlurImage.with(context.getApplicationContext()).load(musicFile.getAlbumImage()).intensity(20).Async(true).getImageBlur();
-                Drawable bitmapDrawable = new BitmapDrawable(context.getResources(), bit);
-                cardView.setBackground(bitmapDrawable);
-            }
-            else {
-                Glide.with(context).asBitmap().load(R.drawable.allecon).centerCrop().into(albumImage);
-                Bitmap bit = BlurImage.with(context.getApplicationContext()).load(R.drawable.allecon).intensity(20).Async(true).getImageBlur();
-                Drawable bitmapDrawable = new BitmapDrawable(context.getResources(), bit);
-                cardView.setBackground(bitmapDrawable);
-            }
+        private void imageRetriever(MusicFile musicFile) {
+            Glide.with(context).asBitmap().load(musicFile.getAlbumImage()).centerCrop().into(albumImage);
+            Bitmap bit = BlurImage.with(context.getApplicationContext()).load(musicFile.getAlbumImage()).intensity(20).Async(true).getImageBlur();
+            Drawable bitmapDrawable = new BitmapDrawable(context.getResources(), bit);
+            cardView.setBackground(bitmapDrawable);
+
         }
     }
 
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
-        utilInterfaces = (UtilInterfaces.ViewChanger)context;
+        utilInterfaces = (UtilInterfaces.ViewChanger) context;
     }
 }

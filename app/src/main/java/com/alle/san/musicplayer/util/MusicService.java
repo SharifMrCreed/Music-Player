@@ -10,6 +10,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -28,7 +29,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     UtilInterfaces.Buttons buttonControls;
     ArrayList<MusicFile> songs = new ArrayList<>();
     MediaPlayer mediaPlayer;
-    private int resumePosition;
+    private int resumePosition = 0;
     private boolean ongoingCall = false;
     private PhoneStateListener phoneStateListener;
     private TelephonyManager telephonyManager;
@@ -57,7 +58,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        songs = allMusic;
+        songs = StorageUtil.getSongsFromStorage(getApplicationContext());
         position = intent.getIntExtra(ADAPTER_POSITION, -1);
         //Could not gain focus
         if (!requestAudioFocus()) stopSelf();
@@ -72,9 +73,8 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         } else {
             if (!songs.isEmpty() && position != -1 && !previousSong.equals(songs.get(position))) {
                 initMediaPlayer(position);
-            }else if (!songs.isEmpty() && position != -1 && previousSong.equals(songs.get(position))){
+            }else if (!songs.isEmpty() && position != -1  && resumePosition != 0)
                 resumeMediaPlayer(position);
-            }
         }
     }
 
@@ -82,6 +82,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         previousSong = songs.get(pos);
         createMediaPlayer(pos);
         start();
+        mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         mediaPlayer.setOnCompletionListener(this);
     }
     void resumeMediaPlayer(int pos) {
@@ -273,7 +274,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         }
 
         buttonControls.removeNotification();
-
+        StorageUtil.clearCachedAudioPlaylist(getApplicationContext());
         //unregister BroadcastReceivers
         unregisterReceiver(becomingNoisyReceiver);
     }

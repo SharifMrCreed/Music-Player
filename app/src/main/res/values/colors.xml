@@ -8,6 +8,7 @@
     <color name="white">#ffffff</color>
     <color name="white_t10">#1AFFFFFF</color>
     <color name="white_t30">#4DFFFFFF</color>
+    <color name="white_t80">#CCFFFFFF</color>
     <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
     <color name="black_t50">#80000000</color>

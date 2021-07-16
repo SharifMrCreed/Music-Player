@@ -2,6 +2,7 @@ package com.alle.san.musicplayer.util;
 
 import android.content.Intent;
 
+import com.alle.san.musicplayer.models.ArtistModel;
 import com.alle.san.musicplayer.models.MusicFile;
 
 import java.util.ArrayList;
@@ -11,6 +12,8 @@ public interface UtilInterfaces {
 
     interface ViewChanger{
         void changeFragment(String tag, ArrayList<MusicFile> songs, int position);
+        void changeFragment(MusicFile musicFile, String tag);
+        void changeFragment(ArtistModel artistModel, String tag);
         void onBackPressed();
     }
     interface Filter{

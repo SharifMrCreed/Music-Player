@@ -3,19 +3,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item android:id="@+id/pop_up_delete"
-        android:title="Delete"
+        android:title="@string/delete"
         app:showAsAction="never"/>
     <item android:id="@+id/pop_up_play"
-        android:title="Play"
+        android:title="@string/play"
         app:showAsAction="never"/>
     <item android:id="@+id/pop_up_share"
-        android:title="Share"
+        android:title="@string/share"
         app:showAsAction="never"/>
     <item android:id="@+id/pop_up_to_playlist"
-        android:title="Add to playlist"
+        android:title="@string/add_to_playlist"
         app:showAsAction="never"/>
     <item android:id="@+id/pop_up_details"
-        android:title="Details"
+        android:title="@string/details"
         app:showAsAction="never"/>
 
 </menu>
