@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaMetadataRetriever;
-import android.os.AsyncTask;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
@@ -20,11 +19,16 @@ public class Globals {
     public static final String  PLAYLIST_FRAGMENT_TAG = "Playlists";
     public static final String  ALBUM_SONG_LIST_FRAGMENT_TAG = "Album Songs";
     public static final String PLAY_SONG_ACTIVITY_TAG = "Play Song Fragment Tag";
-    public static final String ADAPTER_POSITION = "Position";
-    public static final String SONGS_LIST = "Song";
-    public static final String SONGS = "Songs";
-    public static final String STRING_EXTRA = "String extra";
     public static final String ALBUMS_FRAGMENT_TAG = "Albums";
+
+    //keys
+    public static final String AUDIO_PLAYER_STORAGE = " com.alle.san.audioplayer.STORAGE";
+    public static final String POSITION_KEY = "Position";
+    public static final String RESUME_KEY = "Position";
+    public static final String SONGS_KEY = "Songs";
+    public static final String SHUFFLE_KEY = "shuffle";
+    public static final String REPEAT_KEY = "repeat";
+    public static final String STRING_EXTRA = "String extra";
 
     //AudioPlayer notification
     public static final int NOTIFICATION_ID = 101;

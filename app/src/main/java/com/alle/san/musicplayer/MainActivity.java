@@ -196,8 +196,8 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
         switch (tag) {
             case Globals.PLAY_SONG_ACTIVITY_TAG:
                 Intent intent = new Intent(this, PlaySongActivity.class);
-                intent.putExtra(Globals.ADAPTER_POSITION, position);
-                intent.putExtra(Globals.SONGS, songs);
+                intent.putExtra(Globals.POSITION_KEY, position);
+                intent.putExtra(Globals.SONGS_KEY, songs);
                 startActivity(intent);
                 break;
             case SONG_LIST_FRAGMENT_TAG:

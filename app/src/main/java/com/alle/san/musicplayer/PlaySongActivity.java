@@ -1,56 +1,36 @@
 package com.alle.san.musicplayer;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.media.MediaMetadataRetriever;
-import android.media.session.MediaSessionManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.session.MediaControllerCompat;
-import android.support.v4.media.session.MediaSessionCompat;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
 import androidx.palette.graphics.Palette;
 
 import com.alle.san.musicplayer.models.MusicFile;
+import com.alle.san.musicplayer.util.Globals;
 import com.alle.san.musicplayer.util.MusicService;
-import com.alle.san.musicplayer.util.PlaybackStatus;
 import com.alle.san.musicplayer.util.StorageUtil;
 import com.alle.san.musicplayer.util.UtilInterfaces;
 import com.bumptech.glide.Glide;
 import com.jackandphantom.blurimage.BlurImage;
 
 import java.util.ArrayList;
-import java.util.Objects;
-import java.util.Random;
 
-import static com.alle.san.musicplayer.util.Globals.ACTION_NEXT;
-import static com.alle.san.musicplayer.util.Globals.ACTION_PAUSE;
-import static com.alle.san.musicplayer.util.Globals.ACTION_PLAY;
-import static com.alle.san.musicplayer.util.Globals.ACTION_PREVIOUS;
-import static com.alle.san.musicplayer.util.Globals.ACTION_STOP;
-import static com.alle.san.musicplayer.util.Globals.ADAPTER_POSITION;
-import static com.alle.san.musicplayer.util.Globals.MUSIC_CHANNEL;
-import static com.alle.san.musicplayer.util.Globals.NOTIFICATION_ID;
-import static com.alle.san.musicplayer.util.Globals.SONGS;
+import static com.alle.san.musicplayer.util.Globals.POSITION_KEY;
+import static com.alle.san.musicplayer.util.Globals.SONGS_KEY;
 
 public class PlaySongActivity extends AppCompatActivity implements UtilInterfaces.Buttons, ServiceConnection {
 
@@ -63,14 +43,7 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
     ArrayList<MusicFile> songs;
     MusicService musicService;
     MusicFile song;
-    Handler handler = new Handler();
-    private MediaSessionManager mediaSessionManager;
-    private MediaSessionCompat mediaSession;
-    private MediaControllerCompat.TransportControls transportControls;
 
-    boolean shuffle, repeat;
-
-    int position;
     private Bitmap albumArt;
 
     @Override
@@ -97,17 +70,13 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
         shuffleButton = findViewById(R.id.shuffle_button);
 
         //initialize Variables
-        songs = getIntent().getParcelableArrayListExtra(SONGS);
+        songs = getIntent().getParcelableArrayListExtra(SONGS_KEY);
         StorageUtil.storeAudio(songs, getApplicationContext());
-        position = getIntent().getIntExtra(ADAPTER_POSITION, 0);
-        song = songs.get(position);
-        albumArt = albumBitmap(song.getData());
-        shuffle = false;
-        repeat = false;
-
-        //Initialize Methods
+        StorageUtil.setPosition(getIntent().getIntExtra(POSITION_KEY, 0), this);
+        song = songs.get(getIntent().getIntExtra(POSITION_KEY, 0));
+        albumArt = Globals.albumBitmap(this, song.getData());
         initButtons();
-        playSong(song);
+        playSong(song, getIntent().getIntExtra(POSITION_KEY, 0));
     }
 
     private void initButtons() {
@@ -130,106 +99,46 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
 
         pauseButton.setOnClickListener(view -> songPlayPause());
 
-        previousButton.setOnClickListener(view -> playPreviousSong());
+        previousButton.setOnClickListener(view -> musicService.playPreviousSong());
 
-        nextButton.setOnClickListener(view -> playNextSong());
+        nextButton.setOnClickListener(view -> musicService.playNextSong());
 
         backButton.setOnClickListener(view -> onBackPressed());
 
         shuffleButton.setOnClickListener(view -> {
-            if (!shuffle) {
-                startShuffle();
-                shuffle = true;
-                if (musicService != null) musicService.setShuffle(true);
-                Glide.with(this).load(R.drawable.shuffle_icon_on).into(shuffleButton);
-            } else {
-                shuffle = false;
-                if (musicService != null) musicService.setShuffle(false);
-                Glide.with(this).load(R.drawable.shuffle_icon).into(shuffleButton);
-            }
+            StorageUtil.setShuffle(this);
+            Glide.with(this).load(
+                    StorageUtil.isShuffle(this)? R.drawable.shuffle_icon_on: R.drawable.shuffle_icon)
+                    .into(shuffleButton);
+
         });
 
         repeatButton.setOnClickListener(view -> {
-            if (!repeat) {
-                repeat = true;
-                if (musicService != null) musicService.setRepeat(true);
-                Glide.with(this).load(R.drawable.repeat_icon_on).into(repeatButton);
-            } else {
-                repeat = false;
-                if (musicService != null) musicService.setRepeat(false);
-                Glide.with(this).load(R.drawable.repeat_icon).into(repeatButton);
-            }
+            StorageUtil.setRepeat(this);
+            Glide.with(this).load(
+                    StorageUtil.isRepeat(this)? R.drawable.repeat_icon_on: R.drawable.repeat_icon)
+                    .into(repeatButton);
         });
 
     }
 
-    private void startShuffle() {
-        Glide.with(this).load(R.drawable.shuffle_icon_on).into(shuffleButton);
-        Random random = new Random();
-        int size = songs.size();
-        if (size > 1) position = random.nextInt((size - 1));
-        else position = 0;
-
-    }
 
     public void songPlayPause() {
-        if (musicService != null && musicService.isPlaying()) {
-            musicService.pause();
-            Glide.with(this).load(R.drawable.play_icon).into(pauseButton);
-        } else if (musicService != null && !musicService.isPlaying()) {
-            musicService.start();
-            Glide.with(this).load(android.R.drawable.ic_media_pause).into(pauseButton);
-        } else {
-            playSong(songs.get(position));
+        if (this.isDestroyed()){
+            if (musicService != null && musicService.isPlaying()) {
+                Glide.with(this).load(R.drawable.play_icon).into(pauseButton);
+            } else if (musicService != null && !musicService.isPlaying()) {
+                Glide.with(this).load(android.R.drawable.ic_media_pause).into(pauseButton);
+            } else {
+                playSong(song, StorageUtil.getPosition(this));
+            }
         }
     }
 
-    private byte[] getAlbumArt(String dataPath) {
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        byte[] image;
-        try {
-            retriever.setDataSource(dataPath);
-            image = retriever.getEmbeddedPicture();
-        } catch (IllegalArgumentException | SecurityException iE) {
-            Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
-            image = null;
-        }
-        retriever.release();
-        return image;
-    }
-
-    public void playNextSong() {
-        if (shuffle) {
-            startShuffle();
-            shuffle = false;
-            if (musicService != null) musicService.setShuffle(false);
-        }
-        if (position == (songs.size() - 1)) {
-            position = 0;
-        } else {
-            position++;
-        }
-        playSong(songs.get(position));
-    }
-
-    public void playPreviousSong() {
-        if (shuffle) {
-            startShuffle();
-            shuffle = true;
-            if (musicService != null) musicService.setShuffle(true);
-        }
-        if (position == 0) {
-            position = (songs.size() - 1);
-        } else {
-            position--;
-        }
-        playSong(songs.get(position));
-    }
 
     void loadViews(MusicFile currentSong) {
         if (!this.isDestroyed()) {
-            albumArt = albumBitmap(currentSong.getData());
-            albumArt = albumBitmap(currentSong.getData());
+            albumArt = Globals.albumBitmap(this, currentSong.getData());
             songName.setText(currentSong.getTitle());
             artistName.setText(currentSong.getArtist());
             albumName.setText(currentSong.getAlbum());
@@ -243,7 +152,7 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
                         seekBar.setProgress(playtime);
                         currentTime.setText(timeFormat(playtime));
                     }
-                    handler.postDelayed(this, 1000);
+                    new Handler(getMainLooper()).postDelayed(this, 1000);
                 }
             });
 
@@ -254,22 +163,22 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
         }
     }
 
-    public void playSong(MusicFile currentSong) {
-
+    public void playSong(MusicFile currentSong, int position) {
+        song = currentSong;
         loadViews(currentSong);
-
-        if (mediaSessionManager == null) initMediaSession();
         Intent serviceIntent = new Intent(this, MusicService.class);
-        serviceIntent.putExtra(ADAPTER_POSITION, position);
+        serviceIntent.putExtra(POSITION_KEY, position);
         startService(serviceIntent);
-        buildNotification(PlaybackStatus.PLAYING);
     }
 
-    private Bitmap albumBitmap(String dataPath) {
-        byte[] image = getAlbumArt(dataPath);
-        if (image != null) return BitmapFactory.decodeByteArray(image, 0, image.length);
-        else
-            return ((BitmapDrawable) Objects.requireNonNull(ContextCompat.getDrawable(this, R.drawable.allecon))).getBitmap();
+    @Override
+    public void songPause() {
+        if (!this.isDestroyed()) Glide.with(this).load(R.drawable.play_icon).into(pauseButton);
+    }
+
+    @Override
+    public void songPlay() {
+        if (!this.isDestroyed()) Glide.with(this).load(R.drawable.pause_icon).into(pauseButton);
     }
 
     private String timeFormat(int playtime) {
@@ -317,141 +226,6 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
         });
     }
 
-    private void initMediaSession() {
-        mediaSessionManager = (MediaSessionManager) getSystemService(MEDIA_SESSION_SERVICE);
-        mediaSession = new MediaSessionCompat(getApplicationContext(), "AudioPlayer");
-        transportControls = mediaSession.getController().getTransportControls();
-        mediaSession.setActive(true);
-        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
-        updateMetaData();
-
-        // Attach Callback to receive MediaSession updates
-        mediaSession.setCallback(new MediaSessionCompat.Callback() {
-            @Override
-            public void onPlay() {
-                super.onPlay();
-                songPlayPause();
-                buildNotification(PlaybackStatus.PLAYING);
-            }
-
-            @Override
-            public void onPause() {
-                super.onPause();
-                songPlayPause();
-                buildNotification(PlaybackStatus.PAUSED);
-            }
-
-            @Override
-            public void onSkipToNext() {
-                super.onSkipToNext();
-                playNextSong();
-                updateMetaData();
-                buildNotification(PlaybackStatus.PLAYING);
-            }
-
-            @Override
-            public void onSkipToPrevious() {
-                super.onSkipToPrevious();
-                playPreviousSong();
-                updateMetaData();
-                buildNotification(PlaybackStatus.PLAYING);
-            }
-
-            @Override
-            public void onStop() {
-                super.onStop();
-                removeNotification();
-                //Stop the service
-                musicService.stopSelf();
-            }
-
-            @Override
-            public void onSeekTo(long position) {
-                super.onSeekTo(position);
-            }
-        });
-    }
-
-    private void updateMetaData() {
-        mediaSession.setMetadata(new MediaMetadataCompat.Builder()
-                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
-                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, song.getArtist())
-                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, song.getAlbum())
-                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.getTitle())
-                .build());
-    }
-
-    public void buildNotification(PlaybackStatus playbackStatus) {
-        int notificationAction = android.R.drawable.ic_media_pause;//needs to be initialized
-        PendingIntent play_pauseAction = null;
-        //Build a new notification according to the current state of the MediaPlayer
-        if (playbackStatus == PlaybackStatus.PLAYING) {
-            play_pauseAction = playbackAction(1);
-        } else if (playbackStatus == PlaybackStatus.PAUSED) {
-            notificationAction = R.drawable.play_icon;
-            play_pauseAction = playbackAction(0);
-        }
-
-        // Create a new Notification
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, MUSIC_CHANNEL)
-                .setShowWhen(false)
-                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
-                        .setMediaSession(mediaSession.getSessionToken())
-                        .setShowActionsInCompactView(0, 1, 2))
-                .setColor(getResources().getColor(R.color.colorPrimary, getTheme()))
-                .setLargeIcon(albumArt)
-                .setSmallIcon(android.R.drawable.stat_sys_headset)
-                .setOnlyAlertOnce(true)
-                .setSilent(true)
-                .setContentText(song.getArtist())
-                .setContentTitle(song.getAlbum())
-                .setContentInfo(song.getTitle())
-                .addAction(R.drawable.rewind_icon, "previous", playbackAction(3))
-                .addAction(notificationAction, "pause", play_pauseAction)
-                .addAction(R.drawable.next_icon, "next", playbackAction(2));
-
-        ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, notificationBuilder.build());
-    }
-
-    public void removeNotification() {
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.cancel(NOTIFICATION_ID);
-    }
-
-    private PendingIntent playbackAction(int actionNumber) {
-        Intent playbackAction = new Intent(this, MusicService.class);
-        switch (actionNumber) {
-            case 0:
-                // Play
-                playbackAction.setAction(ACTION_PLAY);
-                return PendingIntent.getService(this, actionNumber, playbackAction, 0);
-            case 1:
-                // Pause
-                playbackAction.setAction(ACTION_PAUSE);
-                return PendingIntent.getService(this, actionNumber, playbackAction, 0);
-            case 2:
-                // Next track
-                playbackAction.setAction(ACTION_NEXT);
-                return PendingIntent.getService(this, actionNumber, playbackAction, 0);
-            case 3:
-                // Previous track
-                playbackAction.setAction(ACTION_PREVIOUS);
-                return PendingIntent.getService(this, actionNumber, playbackAction, 0);
-            default:
-                break;
-        }
-        return null;
-    }
-
-    public void handleIncomingActions(Intent playbackAction) {
-        if (playbackAction == null || playbackAction.getAction() == null) return;
-        String actionString = playbackAction.getAction();
-        if (actionString.equalsIgnoreCase(ACTION_PLAY)) transportControls.play();
-        else if (actionString.equalsIgnoreCase(ACTION_PAUSE)) transportControls.pause();
-        else if (actionString.equalsIgnoreCase(ACTION_NEXT)) transportControls.skipToNext();
-        else if (actionString.equalsIgnoreCase(ACTION_PREVIOUS)) transportControls.skipToPrevious();
-        else if (actionString.equalsIgnoreCase(ACTION_STOP)) transportControls.stop();
-    }
 
     void bindMusicService(ServiceConnection serviceConnection) {
         Intent serviceIntent = new Intent(this, MusicService.class);

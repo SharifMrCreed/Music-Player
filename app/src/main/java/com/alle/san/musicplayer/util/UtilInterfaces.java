@@ -1,7 +1,5 @@
 package com.alle.san.musicplayer.util;
 
-import android.content.Intent;
-
 import com.alle.san.musicplayer.models.ArtistModel;
 import com.alle.san.musicplayer.models.MusicFile;
 
@@ -20,12 +18,8 @@ public interface UtilInterfaces {
         void filter(String s);
     }
     interface Buttons{
-        void songPlayPause();
-        void playNextSong();
-        void playPreviousSong();
-        void playSong(MusicFile musicFile);
-        void buildNotification(PlaybackStatus paused);
-        void removeNotification();
-        void handleIncomingActions(Intent intent);
+        void playSong(MusicFile currentSong, int position);
+        void songPause();
+        void songPlay();
     }
 }
