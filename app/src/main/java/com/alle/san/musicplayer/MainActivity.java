@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.widget.SearchView;
@@ -132,7 +133,8 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
                     else if (one.size() == 4)
                         artistModel = new ArtistModel(musicFile.getArtist(), one.get(0), one.get(1), one.get(2), one.get(3));
                     artistsNames.add(musicFile.getArtist());
-                    artists.add(artistModel);
+
+                    if (!TextUtils.isEmpty(artistModel.getName())) artists.add(artistModel);
                 }
             }
             allArtists.addAll(artists);
@@ -286,11 +288,13 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            if (fm.getBackStackEntryCount()>0 && !fm.getBackStackEntryAt(fm.getBackStackEntryCount()-1).getName().equals(ALBUM_SONG_LIST_FRAGMENT_TAG)){
+//            if (fm.getBackStackEntryCount()>0 && !fm.getBackStackEntryAt(fm.getBackStackEntryCount()-1).getName().equals(ALBUM_SONG_LIST_FRAGMENT_TAG)){
                 if (!actionBar.isShowing()) actionBar.show();
-            }
+//            }
             this.getWindow().setStatusBarColor(getColor(R.color.grey_700));
             super.onBackPressed();
+            if (fm.getBackStackEntryCount()>0) actionBar.setTitle(fm.getBackStackEntryAt(fm.getBackStackEntryCount()-1).getName());
+
         }
     }
 

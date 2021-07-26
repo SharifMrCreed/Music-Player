@@ -1,6 +1,8 @@
 package com.alle.san.musicplayer.adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,9 +16,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.alle.san.musicplayer.R;
 import com.alle.san.musicplayer.models.MusicFile;
+import com.alle.san.musicplayer.util.Globals;
 import com.alle.san.musicplayer.util.UtilInterfaces;
+import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
+import java.util.logging.Handler;
 
 import static com.alle.san.musicplayer.util.Globals.PLAY_SONG_ACTIVITY_TAG;
 
@@ -59,13 +64,14 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
 
         TextView songName, artistName;
         RelativeLayout songItem;
-        ImageView moreIcon;
+        ImageView moreIcon, albumImage;
 
         public SongViewHolder(@NonNull View itemView) {
             super(itemView);
             songName = itemView.findViewById(R.id.song_name);
             artistName = itemView.findViewById(R.id.artist_name);
             songItem = itemView.findViewById(R.id.song_item);
+            albumImage = itemView.findViewById(R.id.album_art);
             moreIcon = itemView.findViewById(R.id.more_menu);
         }
 
@@ -73,6 +79,10 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
             MusicFile song = songs.get(position);
             songName.setText(song.getTitle());
             artistName.setText(song.getArtist());
+            new Thread(() -> {
+                Bitmap bitmap = Globals.albumBitmap(itemView.getContext(),song.getData());
+                albumImage.post(() -> Glide.with(itemView).load(bitmap).into(albumImage));
+            }).start();
             songItem.setOnClickListener(view -> {
 //                view.setBackgroundResource(R.drawable.stroked_rectangle);
                 utilInterfaces.changeFragment(PLAY_SONG_ACTIVITY_TAG, songs, position);

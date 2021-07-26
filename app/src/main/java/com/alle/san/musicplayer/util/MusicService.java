@@ -94,7 +94,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        songs = StorageUtil.getSongsFromStorage(getApplicationContext());
+        songs = StorageUtil.loadAudio(getApplicationContext());
         position = intent.getIntExtra(POSITION_KEY, -1);
         //Could not gain focus
         if (!requestAudioFocus()) stopSelf();
@@ -252,6 +252,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         transportControls = mediaSession.getController().getTransportControls();
         mediaSession.setActive(true);
 
+        // TODO: 21/07/2021 Correct bugs here 
         // Attach Callback to receive MediaSession updates
         mediaSession.setCallback(new MediaSessionCompat.Callback() {
             @Override
@@ -296,7 +297,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         });
     }
 
-    private void pausePlayback() {
+    public void pausePlayback() {
         if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
             buildNotification(PlaybackStatus.PAUSED);
@@ -304,7 +305,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         buttonControls.songPause();
     }
 
-    void resumePlayback(){
+    public void resumePlayback(){
         if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
             mediaPlayer.start();
             buildNotification(PlaybackStatus.PLAYING);

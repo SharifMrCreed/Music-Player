@@ -12,6 +12,7 @@
     <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
     <color name="black_t50">#80000000</color>
+    <color name="black_t80">#CC000000</color>
     <color name="black_t30">#4D000000</color>
     <color name="grey_200">#C4C6C6</color>
     <color name="grey_500">#72C4C6C6</color>

@@ -18,7 +18,7 @@ public class PlayListFragment extends Fragment {
 
     RecyclerView rvPlaylist;
 
-    ArrayList<ArrayList<MusicFile>> musicFiles = null;
+    ArrayList<ArrayList<MusicFile>> musicFiles = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -26,7 +26,7 @@ public class PlayListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_playlists, container, false);
         rvPlaylist = view.findViewById(R.id.rv_playlist_fragment);
 
-        if (musicFiles != null) initRecyclerView();
+        if (!musicFiles.isEmpty()) initRecyclerView();
 
         return view;
     }

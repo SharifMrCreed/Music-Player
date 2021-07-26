@@ -144,7 +144,6 @@ public class StorageUtil {
 
     public static void storeAudio(ArrayList<MusicFile> arrayList, Context context ) {
         preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
-
         SharedPreferences.Editor editor = preferences.edit();
         Gson gson = new Gson();
         String json = gson.toJson(arrayList);

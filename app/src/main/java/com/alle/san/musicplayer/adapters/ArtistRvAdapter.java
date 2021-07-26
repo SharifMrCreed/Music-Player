@@ -88,6 +88,7 @@ public class ArtistRvAdapter extends RecyclerView.Adapter<ArtistRvAdapter.Artist
             imageRetriever(musicFile);
             artistName.setText(musicFile.getName());
             linearLayout.setOnClickListener(view -> utilInterfaces.changeFragment(musicFile, ARTISTS_FRAGMENT_TAG));
+
         }
 
 
@@ -98,9 +99,9 @@ public class ArtistRvAdapter extends RecyclerView.Adapter<ArtistRvAdapter.Artist
             Bitmap bit = BlurImage.with(context.getApplicationContext()).load(artist.getPic1()).intensity(20).Async(true).getImageBlur();
             Drawable bitmapDrawable = new BitmapDrawable(context.getResources(), bit);
             cardView.setBackground(bitmapDrawable);
-            if (artist.getPic3() == null)iv2.setVisibility(View.GONE);
-             if (artist.getPic4() == null) iv4.setVisibility(View.GONE);
-             if (artist.getPic2() == null) iv3.setVisibility(View.GONE);
+            if (artist.getPic3() == null) iv2.setVisibility(View.GONE);
+            if (artist.getPic4() == null) iv4.setVisibility(View.GONE);
+            if (artist.getPic2() == null) iv3.setVisibility(View.GONE);
 
 
         }

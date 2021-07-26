@@ -107,16 +107,22 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
 
         shuffleButton.setOnClickListener(view -> {
             StorageUtil.setShuffle(this);
-            Glide.with(this).load(
-                    StorageUtil.isShuffle(this)? R.drawable.shuffle_icon_on: R.drawable.shuffle_icon)
+            if (StorageUtil.isShuffle(this)) Glide.with(this).load(
+                    R.drawable.shuffle_icon_on)
+                    .into(shuffleButton);
+            else Glide.with(this).load(
+                    R.drawable.shuffle_icon)
                     .into(shuffleButton);
 
         });
 
         repeatButton.setOnClickListener(view -> {
             StorageUtil.setRepeat(this);
-            Glide.with(this).load(
-                    StorageUtil.isRepeat(this)? R.drawable.repeat_icon_on: R.drawable.repeat_icon)
+            if (StorageUtil.isRepeat(this)) Glide.with(this).load(
+                    R.drawable.repeat_icon_on)
+                    .into(repeatButton);
+            else Glide.with(this).load(
+                    R.drawable.repeat_icon)
                     .into(repeatButton);
         });
 
@@ -124,11 +130,11 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
 
 
     public void songPlayPause() {
-        if (this.isDestroyed()){
+        if (!this.isDestroyed()){
             if (musicService != null && musicService.isPlaying()) {
-                Glide.with(this).load(R.drawable.play_icon).into(pauseButton);
+                musicService.pausePlayback();
             } else if (musicService != null && !musicService.isPlaying()) {
-                Glide.with(this).load(android.R.drawable.ic_media_pause).into(pauseButton);
+                musicService.resumePlayback();
             } else {
                 playSong(song, StorageUtil.getPosition(this));
             }

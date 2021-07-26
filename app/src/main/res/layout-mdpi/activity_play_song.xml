@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@color/grey_900"
     tools:context=".PlaySongActivity">
-
+    
     <RelativeLayout
         android:id="@+id/parent_layout2"
         android:layout_width="match_parent"
@@ -125,7 +125,7 @@
             android:singleLine="true"
             android:maxLines="1"
             android:text="@string/song_name"
-            android:textSize="28sp"
+            android:textSize="24sp"
             app:layout_constraintBottom_toTopOf="@id/artist_name"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
@@ -152,7 +152,7 @@
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
             android:maxLines="1"
-            android:layout_marginBottom="25dp"
+            android:layout_marginBottom="8dp"
             android:text="@string/artist_name"
             app:layout_constraintBottom_toTopOf="@id/second_last"
             app:layout_constraintEnd_toEndOf="parent"
@@ -164,7 +164,7 @@
             android:layout_height="50dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="20dp"
             app:layout_constraintBottom_toTopOf="@id/bottom_layout">
 
             <TextView
@@ -197,7 +197,7 @@
             android:id="@+id/bottom_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="32dp"
+            android:layout_marginBottom="8dp"
             android:padding="12dp"
             app:layout_constraintBottom_toBottomOf="parent">
 

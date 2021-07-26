@@ -31,7 +31,7 @@ public class ArtistsFragment extends Fragment {
     }
     private void initRecyclerView() {
         ArtistRvAdapter artistRvAdapter = new ArtistRvAdapter(getContext());
-        rvAlbumList.setLayoutManager(new GridLayoutManager(getContext(), 3));
+        rvAlbumList.setLayoutManager(new GridLayoutManager(getContext(), 2));
         rvAlbumList.setAdapter(artistRvAdapter);
         artistRvAdapter.setArtists(allArtists);
     }
