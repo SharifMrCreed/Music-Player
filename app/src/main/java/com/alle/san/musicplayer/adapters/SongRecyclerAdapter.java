@@ -1,8 +1,6 @@
 package com.alle.san.musicplayer.adapters;
 
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,19 +19,16 @@ import com.alle.san.musicplayer.util.UtilInterfaces;
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
-import java.util.logging.Handler;
 
 import static com.alle.san.musicplayer.util.Globals.PLAY_SONG_ACTIVITY_TAG;
 
 public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapter.SongViewHolder> {
 
     ArrayList<MusicFile> songs;
-    Context context;
     UtilInterfaces.ViewChanger utilInterfaces;
 
-    public SongRecyclerAdapter(ArrayList<MusicFile> songs, Context context) {
+    public SongRecyclerAdapter(ArrayList<MusicFile> songs) {
         this.songs = songs;
-        this.context = context;
     }
 
     public void setSongs(ArrayList<MusicFile> songs) {
@@ -45,7 +40,7 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
     @NonNull
     @Override
     public SongViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.rv_song_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.rv_song_item, parent, false);
         return new SongViewHolder(view);
     }
 
@@ -88,7 +83,7 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
                 utilInterfaces.changeFragment(PLAY_SONG_ACTIVITY_TAG, songs, position);
             });
             moreIcon.setOnClickListener(view -> {
-                PopupMenu popupMenu = new PopupMenu(context, view);
+                PopupMenu popupMenu = new PopupMenu(itemView.getContext(), view);
                 popupMenu.getMenuInflater().inflate(R.menu.song_popup_menu, popupMenu.getMenu());
                 popupMenu.show();
                 popupMenu.setOnMenuItemClickListener(item -> {
@@ -100,7 +95,7 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
                     } else if (itemId == R.id.pop_up_play) {
                         utilInterfaces.changeFragment(PLAY_SONG_ACTIVITY_TAG, songs, position);
                     } else if (itemId == R.id.pop_up_to_playlist) {
-                        addToPlayList();
+                        addToPlayList(song);
                     } else if (itemId == R.id.pop_up_details) {
                         showDetails();
                     }
@@ -112,8 +107,8 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
         private void showDetails() {
         }
 
-        private void addToPlayList() {
-
+        private void addToPlayList(MusicFile song) {
+            Globals.showPlaylistDialog(itemView.getContext(), song);
         }
 
         private void share() {
@@ -127,6 +122,6 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
-        utilInterfaces = (UtilInterfaces.ViewChanger) context;
+        utilInterfaces = (UtilInterfaces.ViewChanger) recyclerView.getContext();
     }
 }

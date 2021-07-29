@@ -12,6 +12,7 @@ public interface UtilInterfaces {
         void changeFragment(String tag, ArrayList<MusicFile> songs, int position);
         void changeFragment(MusicFile musicFile, String tag);
         void changeFragment(ArtistModel artistModel, String tag);
+        void changeFragment(String playlistName, String tag);
         void onBackPressed();
     }
     interface Filter{

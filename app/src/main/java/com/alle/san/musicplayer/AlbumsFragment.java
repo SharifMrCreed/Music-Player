@@ -1,33 +1,18 @@
 package com.alle.san.musicplayer;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.MediaMetadataRetriever;
-import android.net.Uri;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Toast;
-
 import com.alle.san.musicplayer.adapters.AlbumRvAdapter;
-import com.alle.san.musicplayer.models.MusicFile;
-import com.alle.san.musicplayer.util.StorageUtil;
-
-import java.util.ArrayList;
-import java.util.HashSet;
 
 import static com.alle.san.musicplayer.MainActivity.allAlbums;
-import static com.alle.san.musicplayer.util.Globals.albumBitmap;
-
 
 public class AlbumsFragment extends Fragment {
     RecyclerView rvAlbumList;
@@ -38,7 +23,8 @@ public class AlbumsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_albums, container, false);
         rvAlbumList = view.findViewById(R.id.rv_album_fragment);
         initRecyclerView();
-
+        LinearLayout nothingLayout = view.findViewById(R.id.nothing_layout);
+        if (allAlbums.isEmpty()) nothingLayout.setVisibility(View.VISIBLE);
         return view;
     }
 

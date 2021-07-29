@@ -28,4 +28,13 @@
     <string name="register">Sign Up</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="create_a_new_playlist">Created playlists will be shown here</string>
+    <string name="nothing_here">Nothing Here</string>
+    <string name="choose_a_playlist">Choose a playlist</string>
+    <string name="new_playlist">new</string>
+    <string name="save">save</string>
+    <string name="playlist_name">Playlist name</string>
+    <string name="_name">name</string>
+    <string name="no_songs_to_show">No songs to show</string>
+    <string name="no_albums">No albums on this device</string>
 </resources>

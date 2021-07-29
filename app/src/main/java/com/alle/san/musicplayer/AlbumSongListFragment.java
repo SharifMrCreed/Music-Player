@@ -34,6 +34,7 @@ import com.jackandphantom.blurimage.BlurImage;
 import java.util.ArrayList;
 
 import static com.alle.san.musicplayer.util.Globals.ALBUMS_FRAGMENT_TAG;
+import static com.alle.san.musicplayer.util.Globals.PLAYLIST_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.STRING_EXTRA;
 
 
@@ -48,6 +49,7 @@ public class AlbumSongListFragment extends Fragment {
 
     MusicFile song;
     ArtistModel artist;
+    String playlistName;
     String extra;
 
     @Override
@@ -58,6 +60,7 @@ public class AlbumSongListFragment extends Fragment {
         if (bundle != null) {
             extra = bundle.getString(STRING_EXTRA);
             if (extra.equals(ALBUMS_FRAGMENT_TAG)) song = bundle.getParcelable(ALBUMS_FRAGMENT_TAG);
+            else if (extra.equals(PLAYLIST_FRAGMENT_TAG)) playlistName = bundle.getString(ALBUMS_FRAGMENT_TAG);
             else artist = bundle.getParcelable(ALBUMS_FRAGMENT_TAG);
             bundle.clear();
 
@@ -88,18 +91,74 @@ public class AlbumSongListFragment extends Fragment {
         if (extra.equals(ALBUMS_FRAGMENT_TAG)){
             imageRetriever(song);
             albumToolBar.setTitle(song.getAlbum());
-            recyclerView.setAdapter(new SongRecyclerAdapter(getAlbumSongs(), getContext()));
+            recyclerView.setAdapter(new SongRecyclerAdapter(getAlbumSongs()));
         }
-        else {
+        else if (extra.equals(PLAYLIST_FRAGMENT_TAG)) {
+            LinearLayout nothingLayout = view.findViewById(R.id.nothing_layout);
+            if (StorageUtil.getPlaylistSongs(context, playlistName) == null){
+                nothingLayout.setVisibility(View.VISIBLE);
+            }
+            ArrayList<MusicFile> playlistSongs = StorageUtil.getPlaylistSongs(context, playlistName);
+            if (playlistSongs == null)playlistSongs = new ArrayList<>();
             ImageView imageView2, imageView3, imageView4;
             imageView2 = view.findViewById(R.id.album_photo2);
             albumPhoto = view.findViewById(R.id.album_photo1);
             imageView3 = view.findViewById(R.id.album_photo3);
             imageView4 = view.findViewById(R.id.album_photo4);
             LinearLayout ll = view.findViewById(R.id.ll);
-            imageArtistRetriever(artist);
+            if (playlistSongs.isEmpty()) imageRetriever(Globals.albumBitmap(context, null));
+            else imageRetriever(Globals.albumBitmap(context, playlistSongs.get(0).getData()));
+            if (playlistSongs.size()>=4){
+                Bitmap bitmap1 = Globals.albumBitmap(context, playlistSongs.get(1).getData());
+                Bitmap bitmap2 = Globals.albumBitmap(context, playlistSongs.get(2).getData());
+                Bitmap bitmap3 = Globals.albumBitmap(context, playlistSongs.get(3).getData());
+                imageView2.post(() -> {
+                    Glide.with(context).load(bitmap1).centerCrop().into(imageView2);
+                    Glide.with(context).load(bitmap2).centerCrop().into(imageView3);
+                    Glide.with(context).load(bitmap3).centerCrop().into(imageView4);
+                });
+            }else if (playlistSongs.size()==3){
+                Bitmap bitmap1 = Globals.albumBitmap(context, playlistSongs.get(1).getData());
+                Bitmap bitmap2 = Globals.albumBitmap(context, playlistSongs.get(2).getData());
+                Bitmap bitmap3 = Globals.albumBitmap(context, playlistSongs.get(3).getData());
+                imageView2.post(() -> {
+                    Glide.with(context).load(bitmap1).centerCrop().into(imageView2);
+                    Glide.with(context).load(bitmap2).centerCrop().into(imageView3);
+                    Glide.with(context).load(bitmap3).centerCrop().into(imageView4);
+                    imageView4.setVisibility(View.GONE);
+                    ll.setWeightSum(3);
+                });
+            }else if (playlistSongs.size() == 2){
+                Bitmap bitmap1 = Globals.albumBitmap(context, playlistSongs.get(1).getData());
+                Bitmap bitmap2 = Globals.albumBitmap(context, playlistSongs.get(2).getData());
+                imageView2.post(() -> {
+                    Glide.with(context).load(bitmap1).centerCrop().into(imageView2);
+                    Glide.with(context).load(bitmap2).centerCrop().into(imageView3);
+                    imageView3.setVisibility(View.GONE);
+                    imageView4.setVisibility(View.GONE);
+                    ll.setWeightSum(2);
+                });
+            }else {
+                imageView2.post(() -> {
+                    imageView2.setVisibility(View.GONE);
+                    imageView3.setVisibility(View.GONE);
+                    imageView4.setVisibility(View.GONE);
+                    ll.setWeightSum(1);
+                });
+            }
+            albumToolBar.setTitle(playlistName);
+            recyclerView.setAdapter(new SongRecyclerAdapter(playlistSongs));
+        }
+        else{
+            ImageView imageView2, imageView3, imageView4;
+            imageView2 = view.findViewById(R.id.album_photo2);
+            albumPhoto = view.findViewById(R.id.album_photo1);
+            imageView3 = view.findViewById(R.id.album_photo3);
+            imageView4 = view.findViewById(R.id.album_photo4);
+            LinearLayout ll = view.findViewById(R.id.ll);
+            imageRetriever(artist.getPic1());
             albumToolBar.setTitle(artist.getName());
-            recyclerView.setAdapter(new SongRecyclerAdapter(getArtistSongs(), getContext()));
+            recyclerView.setAdapter(new SongRecyclerAdapter(getArtistSongs()));
             if (artist.getPic2() == null) {
                 imageView2.setVisibility(View.GONE);
                 imageView3.setVisibility(View.GONE);
@@ -168,10 +227,8 @@ public class AlbumSongListFragment extends Fragment {
         });
     }
 
-    private void imageArtistRetriever(ArtistModel musicFile) {
+    private void imageRetriever(Bitmap bitmap) {
         Bitmap bit;
-        Bitmap bitmap = musicFile.getPic1();
-
         Glide.with(context).asBitmap().load(bitmap).centerCrop().into(albumPhoto);
         bit = BlurImage.with(context.getApplicationContext()).load(bitmap).intensity(25).Async(true).getImageBlur();
 

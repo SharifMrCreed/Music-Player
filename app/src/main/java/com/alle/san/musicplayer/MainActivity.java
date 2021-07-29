@@ -239,6 +239,20 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
         initFragment(albumSongListFragment, ALBUM_SONG_LIST_FRAGMENT_TAG);
     }
 
+    @Override
+    public void changeFragment(String playlistName, String tag) {
+
+        if (albumSongListFragment == null) {
+            albumSongListFragment = new AlbumSongListFragment();
+        }
+        actionBar.hide();
+        Bundle args = new Bundle();
+        args.putString(ALBUMS_FRAGMENT_TAG, playlistName);
+        args.putString(STRING_EXTRA, tag);
+        albumSongListFragment.setArguments(args);
+        initFragment(albumSongListFragment, ALBUM_SONG_LIST_FRAGMENT_TAG);
+    }
+
     private void initNavigationView() {
         nNavigationView.setNavigationItemSelectedListener(item -> {
             if (!actionBar.isShowing()) actionBar.show();

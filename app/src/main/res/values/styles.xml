@@ -6,6 +6,7 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textViewStyle">@style/textviewTextColor</item>
         <item name="android:popupMenuStyle">@style/PopupMenu</item>
+        <item name="dialogTheme">@style/DialogStyle</item>
     </style>
 
     <style name="textviewTextColor" parent="Widget.AppCompat.TextView">
@@ -17,6 +18,11 @@
     </style>
     <style name="PopupMenu" parent="ThemeOverlay.AppCompat.Dark">
         <item name="android:popupBackground">@color/grey_900</item>
+    </style>
+
+    <style name="DialogStyle" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="dialogCornerRadius">16dp</item>
     </style>
 
     <style name="circle">

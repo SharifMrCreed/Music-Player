@@ -17,7 +17,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import static android.Manifest.permission_group.STORAGE;
+import static com.alle.san.musicplayer.util.Globals.AUDIO_PLAYER_PLAYLISTS;
 import static com.alle.san.musicplayer.util.Globals.AUDIO_PLAYER_STORAGE;
+import static com.alle.san.musicplayer.util.Globals.PLAYLIST_KEY;
 import static com.alle.san.musicplayer.util.Globals.POSITION_KEY;
 import static com.alle.san.musicplayer.util.Globals.REPEAT_KEY;
 import static com.alle.san.musicplayer.util.Globals.RESUME_KEY;
@@ -206,6 +208,50 @@ public class StorageUtil {
     public static int getResumePosition(Context context) {
         preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
         return preferences.getInt(RESUME_KEY, 0);//return 0 if no data found
+    }
+
+    public static void addToPlaylist(String playlistName, MusicFile song, Context context ) {
+        ArrayList<MusicFile> arrayList = getPlaylistSongs(context, playlistName);
+        if (arrayList == null) arrayList = new ArrayList<>();
+        arrayList.add(song);
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_PLAYLISTS, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(arrayList);
+        editor.putString(playlistName, json);
+        editor.apply();
+    }
+
+
+    public static void createPlaylist(String playlistName, Context context ) {
+        ArrayList<String> arrayList = getPlaylists(context);
+        if (arrayList == null) arrayList = new ArrayList<>();
+        arrayList.add(playlistName);
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_PLAYLISTS, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(arrayList);
+        editor.putString(PLAYLIST_KEY, json);
+        editor.apply();
+    }
+
+    public static ArrayList<String> getPlaylists(Context context) {
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_PLAYLISTS, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = preferences.getString(PLAYLIST_KEY, null);
+        Type type = new TypeToken<ArrayList<String>>() {
+        }.getType();
+        return gson.fromJson(json, type);
+    }
+
+
+    public static ArrayList<MusicFile> getPlaylistSongs(Context context, String playlistName) {
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_PLAYLISTS, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = preferences.getString(playlistName, null);
+        Type type = new TypeToken<ArrayList<MusicFile>>() {
+        }.getType();
+        return gson.fromJson(json, type);
     }
 
     public static void clearCachedAudioPlaylist(Context context) {

@@ -1,15 +1,24 @@
 package com.alle.san.musicplayer.util;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaMetadataRetriever;
+import android.text.TextUtils;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.alle.san.musicplayer.R;
+import com.alle.san.musicplayer.adapters.PlayListRvAdapter;
+import com.alle.san.musicplayer.models.MusicFile;
 
 import java.util.Objects;
 
@@ -23,7 +32,9 @@ public class Globals {
 
     //keys
     public static final String AUDIO_PLAYER_STORAGE = " com.alle.san.audioplayer.STORAGE";
+    public static final String AUDIO_PLAYER_PLAYLISTS = " com.alle.san.audioplayer.PLAYLISTS";
     public static final String POSITION_KEY = "Position";
+    public static final String PLAYLIST_KEY = "playlist";
     public static final String RESUME_KEY = "Position";
     public static final String SONGS_KEY = "Songs";
     public static final String SHUFFLE_KEY = "shuffle";
@@ -51,7 +62,6 @@ public class Globals {
             retriever.setDataSource(dataPath);
             image = retriever.getEmbeddedPicture();
         } catch (IllegalArgumentException | SecurityException iE) {
-            Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
             image = null;
         }
         retriever.release();
@@ -60,4 +70,57 @@ public class Globals {
             return ((BitmapDrawable) Objects.requireNonNull(ContextCompat.getDrawable(context, R.drawable.allecon))).getBitmap();
     }
 
+    public static void showPlaylistDialog(Context context, MusicFile song) {
+        Dialog dialog = new Dialog(context);
+        PlayListRvAdapter adapter = new PlayListRvAdapter(context, PlayListRvAdapter.LINEAR_VIEW);
+        ;
+        dialog.setCancelable(true);
+        dialog.setContentView(R.layout.playlist_dialog);
+        dialog.findViewById(R.id.btn_create_playlist).setOnClickListener(v -> createNewPlaylistDialog(context, adapter));
+        String count;
+        if (StorageUtil.getPlaylists(context) != null)
+            count = StorageUtil.getPlaylists(context).size() + " " + PLAYLIST_FRAGMENT_TAG;
+        else {
+            dialog.findViewById(R.id.nothing_layout).setVisibility(View.VISIBLE);
+            count = "0 " + PLAYLIST_FRAGMENT_TAG;
+        }
+        TextView playlistCount = dialog.findViewById(R.id.playlist_num);
+        playlistCount.setText(count);
+        RecyclerView recyclerView = dialog.findViewById(R.id.rv_play_list);
+        recyclerView.setLayoutManager(new LinearLayoutManager(context, RecyclerView.VERTICAL, false));
+        adapter.setOnItemClickListener(playlistName -> {
+            StorageUtil.addToPlaylist(playlistName, song, context);
+            Toast.makeText(context, song.getTitle() + " has been added to " + playlistName, Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        });
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.setOnShowListener(dialog1 -> adapter.setPlaylists(StorageUtil.getPlaylists(context)));
+        recyclerView.setAdapter(adapter);
+        dialog.show();
+    }
+
+    private static void createNewPlaylistDialog(Context context, PlayListRvAdapter adapter) {
+        Dialog dialog = new Dialog(context);
+        dialog.setContentView(R.layout.playlist_create_dialog);
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
+        EditText playlistNameEt = dialog.findViewById(R.id.playlist_name);
+        dialog.findViewById(R.id.btn_save_playlist).setOnClickListener(v -> {
+            String playlistName = playlistNameEt.getText().toString();
+            if (!TextUtils.isEmpty(playlistName)) {
+                StorageUtil.createPlaylist(playlistName, context);
+                adapter.setPlaylists(StorageUtil.getPlaylists(context));
+                dialog.dismiss();
+            } else playlistNameEt.setError("Required");
+        });
+        String count;
+        if (StorageUtil.getPlaylists(context) != null)
+            count = StorageUtil.getPlaylists(context).size() + " " + PLAYLIST_FRAGMENT_TAG;
+        else {
+            count = "0 " + PLAYLIST_FRAGMENT_TAG;
+        }
+        TextView playlistCount = dialog.findViewById(R.id.playlist_num);
+        playlistCount.setText(count);
+        dialog.show();
+    }
 }
