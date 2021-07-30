@@ -78,6 +78,7 @@ public class PlayListRvAdapter extends RecyclerView.Adapter<PlayListRvAdapter.Ar
 
     @Override
     public int getItemCount() {
+        if (playlists == null) playlists = new ArrayList<>();
         return playlists.size();
     }
 

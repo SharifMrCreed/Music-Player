@@ -41,7 +41,6 @@ public class StorageUtil {
                 if (    fileName.endsWith(".mp3") || fileName.endsWith(".m4a") ||
                         fileName.endsWith(".wav") || fileName.endsWith(".acc") )
                 {
-
                     songsList.add(new MusicFile(fileName, "", 0,"",file1.getPath(), null));
                 }
             }
@@ -49,20 +48,22 @@ public class StorageUtil {
         return songsList;
     }
 
-    public static HashSet<File> songFolders(File file){
-        HashSet<File> songsList = new HashSet<File>();
+    public static HashSet<String> getSongFolders(File file){
+        HashSet<String> songsList = new HashSet<>();
+        ArrayList<String> folderNames = new ArrayList<>();
         File [] directoryFiles = file.listFiles();
-        for (File file1: directoryFiles){
-            String fileName = file1.getName();
-            if (    fileName.endsWith(".mp3") || fileName.endsWith(".m4a") ||
-                    fileName.endsWith(".wav") || fileName.endsWith(".acc") )
-            {
-                songsList.add(file);
-            }
-            if (file1.isDirectory() && !file1.isHidden()){
-                songsList.addAll(songFolders(file1));
-            }else{
+        if (directoryFiles!= null) {
+            for (File file1 : directoryFiles) {
+                String fileName = file1.getName();
+                if (fileName.endsWith(".mp3") || fileName.endsWith(".m4a") ||
+                        fileName.endsWith(".wav") || fileName.endsWith(".acc") && !folderNames.contains(file.getName())) {
+                    songsList.add(file.getName());
+                    folderNames.add(file.getName());
 
+                }
+                if (file1.isDirectory() && !file1.isHidden()) {
+                    songsList.addAll(getSongFolders(file1));
+                }
             }
         }
         return songsList;

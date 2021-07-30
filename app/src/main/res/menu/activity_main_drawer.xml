@@ -25,10 +25,6 @@
             android:id="@+id/nav_folders"
             android:icon="@drawable/ic_folder"
             android:title="@string/folders" />
-        <item
-            android:id="@+id/nav_favourites"
-            android:icon="@drawable/ic_favorite"
-            android:title="@string/favourites" />
 
     </group>
     <group

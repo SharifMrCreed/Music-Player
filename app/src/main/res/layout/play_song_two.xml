@@ -30,9 +30,9 @@
             android:id="@+id/upper_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintEnd_toEndOf="parent">
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="40dp"
@@ -78,7 +78,7 @@
                     android:layout_gravity="center"
                     android:clickable="true"
                     android:focusable="true"
-                    android:src="@drawable/menu_icon" />
+                    android:src="@drawable/menu_icon"/>
 
             </com.google.android.material.card.MaterialCardView>
 
@@ -118,15 +118,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
+            android:layout_marginStart="32dp"
             android:layout_marginBottom="8dp"
             android:ellipsize="marquee"
             android:marqueeRepeatLimit="marquee_forever"
-            android:maxLines="1"
             android:singleLine="true"
+            android:maxLines="1"
             android:text="@string/song_name"
-            android:textSize="24sp"
+            android:textSize="28sp"
             app:layout_constraintBottom_toTopOf="@id/artist_name"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
@@ -136,10 +136,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:maxLines="1"
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
             android:layout_marginBottom="8dp"
-            android:maxLines="1"
             android:text="@string/artist_name"
             app:layout_constraintBottom_toTopOf="@id/album_name"
             app:layout_constraintEnd_toEndOf="parent"
@@ -152,8 +152,8 @@
             android:layout_gravity="center"
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
-            android:layout_marginBottom="16dp"
             android:maxLines="1"
+            android:layout_marginBottom="25dp"
             android:text="@string/artist_name"
             app:layout_constraintBottom_toTopOf="@id/second_last"
             app:layout_constraintEnd_toEndOf="parent"
@@ -166,7 +166,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:layout_marginBottom="24dp"
-            app:layout_constraintBottom_toTopOf="@id/pause">
+            app:layout_constraintBottom_toTopOf="@id/bottom_layout">
 
             <TextView
                 android:id="@+id/current_time"
@@ -194,103 +194,125 @@
         </RelativeLayout>
 
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/previous_button"
-            android:layout_width="54dp"
-            android:layout_height="54dp"
-            android:layout_gravity="center"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="15dp"
-            android:src="@drawable/rewind_icon"
-            app:layout_constraintBottom_toBottomOf="@+id/pause"
-            app:layout_constraintEnd_toStartOf="@+id/pause"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/shuffle_button"
-            app:layout_constraintTop_toTopOf="@+id/pause"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/pause"
-            android:layout_width="54dp"
-            android:layout_height="54dp"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/bottom_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="32dp"
-            android:elevation="12dp"
-            app:cardElevation="12dp"
-            app:cardBackgroundColor="@color/transparent"
-            app:cardCornerRadius="27dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/next_button"
-            app:layout_constraintStart_toEndOf="@+id/previous_button">
+            android:padding="12dp"
+            app:layout_constraintBottom_toBottomOf="parent">
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/previous_button"
+                android:layout_width="55dp"
+                android:layout_height="55dp"
                 android:layout_gravity="center"
-                android:background="@drawable/shape_circle">
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:clickable="true"
+                android:elevation="40dp"
+                android:focusable="true"
+                android:padding="15dp"
+                android:src="@drawable/rewind_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/pause"
+                app:layout_constraintStart_toEndOf="@+id/shuffle_button"
+                app:layout_constraintTop_toTopOf="parent"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
 
-                <com.google.android.material.imageview.ShapeableImageView
-                    android:id="@+id/pause_button"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:layout_centerInParent="true"
-                    android:clickable="true"
-                    android:focusable="true" />
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/pause"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:elevation="12dp"
+                android:padding="1dp"
+                app:cardBackgroundColor="@color/black_t30"
+                app:cardCornerRadius="32dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/next_button"
+                app:layout_constraintStart_toEndOf="@+id/previous_button"
+                app:layout_constraintTop_toTopOf="parent">
 
-            </RelativeLayout>
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:background="@drawable/shape_circle">
 
-        </com.google.android.material.card.MaterialCardView>
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/pause_button"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
+                        android:layout_centerInParent="true"
+                        android:clickable="true"
+                        android:focusable="true" />
 
+                </RelativeLayout>
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/next_button"
-            android:layout_width="54dp"
-            android:layout_height="54dp"
-            android:layout_gravity="center"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="15dp"
-            android:src="@drawable/next_icon"
-            app:layout_constraintBottom_toBottomOf="@+id/pause"
-            app:layout_constraintEnd_toStartOf="@+id/repeat_button"
-            app:layout_constraintStart_toEndOf="@+id/pause"
-            app:layout_constraintTop_toTopOf="@+id/pause"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
-
-
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/repeat_button"
-            android:layout_width="54dp"
-            android:layout_height="54dp"
-            android:layout_gravity="center"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="17dp"
-            android:src="@drawable/repeat_icon"
-            app:layout_constraintBottom_toBottomOf="@+id/next_button"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/next_button"
-            app:layout_constraintTop_toTopOf="@+id/next_button"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
+            </com.google.android.material.card.MaterialCardView>
 
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/shuffle_button"
-            android:layout_width="54dp"
-            android:layout_height="54dp"
-            android:layout_gravity="center"
-            android:clickable="true"
-            android:elevation="40dp"
-            android:focusable="true"
-            android:padding="17dp"
-            android:src="@drawable/shuffle_icon"
-            app:layout_constraintBottom_toBottomOf="@+id/previous_button"
-            app:layout_constraintEnd_toStartOf="@+id/previous_button"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/previous_button"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/next_button"
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:clickable="true"
+                android:elevation="40dp"
+                android:focusable="true"
+                android:padding="15dp"
+                android:src="@drawable/next_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/repeat_button"
+                app:layout_constraintStart_toEndOf="@+id/pause"
+                app:layout_constraintTop_toTopOf="parent"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
+
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/repeat_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="24dp"
+                android:clickable="true"
+                android:elevation="40dp"
+                android:focusable="true"
+                android:padding="10dp"
+                android:src="@drawable/repeat_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/next_button"
+                app:layout_constraintTop_toTopOf="parent"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
+
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/shuffle_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginBottom="8dp"
+                android:clickable="true"
+                android:elevation="40dp"
+                android:focusable="true"
+                android:padding="10dp"
+                android:src="@drawable/shuffle_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/previous_button"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

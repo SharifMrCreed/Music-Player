@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import static com.alle.san.musicplayer.util.Globals.ALBUMS_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.ALBUM_SONG_LIST_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.ARTISTS_FRAGMENT_TAG;
+import static com.alle.san.musicplayer.util.Globals.FAVORITES;
+import static com.alle.san.musicplayer.util.Globals.FOLDERS_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.PLAYLIST_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.SONG_LIST_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.STRING_EXTRA;
@@ -46,7 +48,6 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
 
     private static final String TAG = "MainActivity";
     private static final int STORAGE_REQUEST = 2;
-    public static ArrayList<MusicFile> allMusic = new ArrayList<>();
     public static ArrayList<MusicFile> allAlbums = new ArrayList<>();
     public static ArrayList<ArtistModel> allArtists = new ArrayList<>();
     int fragmentContainer;
@@ -62,7 +63,6 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
     NavigationView nNavigationView;
 
     private UtilInterfaces.Filter filter;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,8 +85,7 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
         if (checkPermissions()) initViewPaging();
         if (albumsFragment == null) albumsFragment = new AlbumsFragment();
     }
-
-
+    
     private void initViewPaging() {
         if (songListFragment == null) songListFragment = new SongListFragment();
         initFragment(songListFragment, SONG_LIST_FRAGMENT_TAG);
@@ -143,14 +142,14 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
     }
 
     private void initFragment(Fragment fragment, String tag) {
-        Log.d(TAG, "\n\ninitFragment: " + tag + "\n\n");
+        Bundle args = new Bundle();
+        args.putString(ALBUMS_FRAGMENT_TAG, tag);
         FragmentTransaction transaction = fm.beginTransaction();
         transaction.replace(fragmentContainer, fragment, tag);
         transaction.addToBackStack(tag);
         transaction.commit();
         actionBar.setTitle(tag);
     }
-
 
     private boolean checkPermissions() {
         boolean readStorage = false;
@@ -190,6 +189,7 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == STORAGE_REQUEST && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            StorageUtil.createPlaylist(FAVORITES, this);
             initViewPaging();
     }
 
@@ -260,9 +260,6 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
                 case (R.id.nav_all_songs):
                     initFragment(songListFragment, SONG_LIST_FRAGMENT_TAG);
                     break;
-                case (R.id.nav_favourites):
-//                    initFragment(new FavoritesFragment(), FAVOURITES_FRAGMENT_TAG);
-                    break;
                 case (R.id.nav_albums):
                     initFragment(albumsFragment, ALBUMS_FRAGMENT_TAG);
                     break;
@@ -273,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
                     initFragment(new PlayListFragment(), PLAYLIST_FRAGMENT_TAG);
                     break;
                 case (R.id.nav_folders):
-                    //TODO: TBI..
+                    initFragment(albumsFragment, FOLDERS_FRAGMENT_TAG);
                     break;
                 case (R.id.nav_settings):
                     //TODO: TBI...
