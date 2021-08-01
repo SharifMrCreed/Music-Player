@@ -107,12 +107,11 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
 
         shuffleButton.setOnClickListener(view -> {
             StorageUtil.setShuffle(this);
+
             if (StorageUtil.isShuffle(this)) Glide.with(this).load(
                     R.drawable.shuffle_icon_on)
                     .into(shuffleButton);
-            else Glide.with(this).load(
-                    R.drawable.shuffle_icon)
-                    .into(shuffleButton);
+            else Glide.with(this).load(R.drawable.shuffle_icon).into(shuffleButton);
 
         });
 
@@ -121,9 +120,7 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
             if (StorageUtil.isRepeat(this)) Glide.with(this).load(
                     R.drawable.repeat_icon_on)
                     .into(repeatButton);
-            else Glide.with(this).load(
-                    R.drawable.repeat_icon)
-                    .into(repeatButton);
+            else Glide.with(this).load(R.drawable.repeat_icon).into(repeatButton);
         });
 
     }

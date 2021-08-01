@@ -19,6 +19,7 @@ import java.util.HashSet;
 import static android.Manifest.permission_group.STORAGE;
 import static com.alle.san.musicplayer.util.Globals.AUDIO_PLAYER_PLAYLISTS;
 import static com.alle.san.musicplayer.util.Globals.AUDIO_PLAYER_STORAGE;
+import static com.alle.san.musicplayer.util.Globals.CURRENT_SONG;
 import static com.alle.san.musicplayer.util.Globals.PLAYLIST_KEY;
 import static com.alle.san.musicplayer.util.Globals.POSITION_KEY;
 import static com.alle.san.musicplayer.util.Globals.REPEAT_KEY;
@@ -154,7 +155,25 @@ public class StorageUtil {
         editor.apply();
     }
 
-    public static ArrayList<MusicFile> loadAudio(Context context) {
+    public static void setCurrentSong(MusicFile song, Context context ) {
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(song);
+        editor.putString(CURRENT_SONG, json);
+        editor.apply();
+    }
+
+    public static MusicFile getCurrentSong(Context context){
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = preferences.getString(CURRENT_SONG, null);
+        Type type = new TypeToken<MusicFile>() {
+        }.getType();
+        return gson.fromJson(json, type);
+    }
+
+    public static ArrayList<MusicFile> getPlayingSongs(Context context) {
         preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
         Gson gson = new Gson();
         String json = preferences.getString(SONGS_KEY, null);
@@ -169,9 +188,10 @@ public class StorageUtil {
     }
 
     public static void setShuffle(Context context){
-        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
+        boolean isShuffle = preferences.getBoolean(SHUFFLE_KEY, false);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean(SHUFFLE_KEY, !preferences.getBoolean(SHUFFLE_KEY, false));
+        editor.putBoolean(SHUFFLE_KEY, !isShuffle);
         editor.apply();
     }
 
@@ -182,8 +202,9 @@ public class StorageUtil {
 
     public static void setRepeat(Context context){
         preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
+        boolean isRepeating = preferences.getBoolean(REPEAT_KEY, false);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean(SHUFFLE_KEY, !preferences.getBoolean(REPEAT_KEY, false));
+        editor.putBoolean(REPEAT_KEY, !isRepeating);
         editor.apply();
     }
 
@@ -199,17 +220,6 @@ public class StorageUtil {
         return preferences.getInt(POSITION_KEY, -1);//return -1 if no data found
     }
 
-    public static void setResumePosition(int position, Context context) {
-        preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt(RESUME_KEY, position);
-        editor.apply();
-    }
-
-    public static int getResumePosition(Context context) {
-        preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
-        return preferences.getInt(RESUME_KEY, 0);//return 0 if no data found
-    }
 
     public static void addToPlaylist(String playlistName, MusicFile song, Context context ) {
         ArrayList<MusicFile> arrayList = getPlaylistSongs(context, playlistName);

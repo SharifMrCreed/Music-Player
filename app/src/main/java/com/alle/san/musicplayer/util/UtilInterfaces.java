@@ -13,6 +13,7 @@ public interface UtilInterfaces {
         void changeFragment(MusicFile musicFile, String tag);
         void changeFragment(ArtistModel artistModel, String tag);
         void changeFragment(String playlistName, String tag);
+        void openPlaySongActivity(MusicFile song);
         void onBackPressed();
     }
     interface Filter{

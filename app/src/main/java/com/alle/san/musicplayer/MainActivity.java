@@ -7,8 +7,8 @@ import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
+import android.view.View;
 import android.widget.SearchView;
 
 import androidx.annotation.NonNull;
@@ -16,6 +16,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
@@ -39,6 +40,7 @@ import static com.alle.san.musicplayer.util.Globals.ALBUM_SONG_LIST_FRAGMENT_TAG
 import static com.alle.san.musicplayer.util.Globals.ARTISTS_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.FAVORITES;
 import static com.alle.san.musicplayer.util.Globals.FOLDERS_FRAGMENT_TAG;
+import static com.alle.san.musicplayer.util.Globals.MINIMIZED_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.PLAYLIST_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.SONG_LIST_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.STRING_EXTRA;
@@ -58,11 +60,13 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
     AlbumsFragment albumsFragment = null;
     AlbumSongListFragment albumSongListFragment = null;
 
+    CardView miniPlayerCard;
     Toolbar toolbar;
     DrawerLayout drawer;
     NavigationView nNavigationView;
 
     private UtilInterfaces.Filter filter;
+    private Intent playSongIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
         fragmentContainer = R.id.fragment_container;
         drawer = findViewById(R.id.drawer_layout);
         nNavigationView = findViewById(R.id.nav_view);
+        miniPlayerCard = findViewById(R.id.mini_container);
         toolbar = findViewById(R.id.appToolBar);
         setSupportActionBar(toolbar);
         actionBar = getSupportActionBar();
@@ -197,10 +202,10 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
     public void changeFragment(String tag, ArrayList<MusicFile> songs, int position) {
         switch (tag) {
             case Globals.PLAY_SONG_ACTIVITY_TAG:
-                Intent intent = new Intent(this, PlaySongActivity.class);
-                intent.putExtra(Globals.POSITION_KEY, position);
-                intent.putExtra(Globals.SONGS_KEY, songs);
-                startActivity(intent);
+                playSongIntent = new Intent(this, PlaySongActivity.class);
+                playSongIntent.putExtra(Globals.POSITION_KEY, position);
+                playSongIntent.putExtra(Globals.SONGS_KEY, songs);
+                startActivity(playSongIntent);
                 break;
             case SONG_LIST_FRAGMENT_TAG:
                 if (songListFragment == null) {
@@ -253,6 +258,16 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
         initFragment(albumSongListFragment, ALBUM_SONG_LIST_FRAGMENT_TAG);
     }
 
+    @Override
+    public void openPlaySongActivity(MusicFile song) {
+        if (playSongIntent == null) {
+            playSongIntent = new Intent(this, PlaySongActivity.class);
+            playSongIntent.putExtra(Globals.POSITION_KEY, StorageUtil.getPosition(this));
+            playSongIntent.putExtra(Globals.SONGS_KEY, StorageUtil.getPlayingSongs(this));
+        }
+        startActivity(playSongIntent);
+    }
+
     private void initNavigationView() {
         nNavigationView.setNavigationItemSelectedListener(item -> {
             if (!actionBar.isShowing()) actionBar.show();
@@ -287,6 +302,17 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
     @Override
     protected void onPause() {
         super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (StorageUtil.getCurrentSong(this) == null) miniPlayerCard.setVisibility(View.GONE);
+        else{
+            miniPlayerCard.setVisibility(View.VISIBLE);
+            fm.beginTransaction().replace(R.id.mini_player_view, new MinimizedPlayerFragment(), MINIMIZED_FRAGMENT_TAG)
+                    .commit();
+        }
     }
 
     @Override

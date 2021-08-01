@@ -28,6 +28,7 @@ public class Globals {
     public static final String  PLAYLIST_FRAGMENT_TAG = "Playlists";
     public static final String  ALBUM_SONG_LIST_FRAGMENT_TAG = "Album Songs";
     public static final String PLAY_SONG_ACTIVITY_TAG = "Play Song Fragment Tag";
+    public static final String MINIMIZED_FRAGMENT_TAG = "minimized fragment";
     public static final String ALBUMS_FRAGMENT_TAG = "Albums";
     public static final String FOLDERS_FRAGMENT_TAG = "Folders";
     public static final String FAVORITES = "Favorites";
@@ -37,8 +38,9 @@ public class Globals {
     public static final String AUDIO_PLAYER_PLAYLISTS = " com.alle.san.audioplayer.PLAYLISTS";
     public static final String POSITION_KEY = "Position";
     public static final String PLAYLIST_KEY = "playlist";
-    public static final String RESUME_KEY = "Position";
+    public static final String RESUME_KEY = "resume";
     public static final String SONGS_KEY = "Songs";
+    public static final String CURRENT_SONG = "current song";
     public static final String SHUFFLE_KEY = "shuffle";
     public static final String REPEAT_KEY = "repeat";
     public static final String STRING_EXTRA = "String extra";

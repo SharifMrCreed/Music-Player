@@ -56,8 +56,6 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
     private AudioManager audioManager;
     private MediaSessionCompat mediaSession;
     private MediaControllerCompat.TransportControls transportControls;
-    private static final String MY_MEDIA_ROOT_ID = "media_root_id";
-    private static final String MY_EMPTY_MEDIA_ROOT_ID = "empty_root_id";
 
     IBinder binder = new MusicBinder();
     int position;
@@ -94,7 +92,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        songs = StorageUtil.loadAudio(getApplicationContext());
+        songs = StorageUtil.getPlayingSongs(getApplicationContext());
         position = intent.getIntExtra(POSITION_KEY, -1);
         //Could not gain focus
         if (!requestAudioFocus()) stopSelf();
@@ -175,14 +173,19 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
     public void playNextSong() {
         if (StorageUtil.isShuffle(getApplicationContext())) {
             startShuffle();
-        }
-        if (position == (songs.size() - 1)) {
+        }else if (position == (songs.size() - 1)) {
             position = 0;
         } else {
             position++;
         }
         StorageUtil.setPosition(position, getApplicationContext());
         buttonControls.playSong(songs.get(position), position);
+    }
+    void repeatSong(){
+        if (mediaPlayer != null) {
+            mediaPlayer.seekTo(0);
+            mediaPlayer.start();
+        }
     }
 
     public void playPreviousSong() {
@@ -213,12 +216,15 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        if (StorageUtil.isRepeat(getApplicationContext())) buttonControls.playSong(songs.get(position), position);
+        if (StorageUtil.isRepeat(getApplicationContext())){
+            repeatSong();
+        }
         else playNextSong();
     }
 
     public void createMediaPlayer(int songPosition) {
         Uri uri = Uri.parse(songs.get(songPosition).getData());
+        StorageUtil.setCurrentSong(songs.get(songPosition), getApplication());
         if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.release();
@@ -257,19 +263,16 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         mediaSession.setCallback(new MediaSessionCompat.Callback() {
             @Override
             public void onPlay() {
-                super.onPlay();
                 resumePlayback();
             }
 
             @Override
             public void onPause() {
-                super.onPause();
                 pausePlayback();
             }
 
             @Override
             public void onSkipToNext() {
-                super.onSkipToNext();
                 playNextSong();
                 updateMetaData();
                 buildNotification(PlaybackStatus.PLAYING);
@@ -277,7 +280,6 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
 
             @Override
             public void onSkipToPrevious() {
-                super.onSkipToPrevious();
                 playPreviousSong();
                 updateMetaData();
                 buildNotification(PlaybackStatus.PLAYING);
@@ -285,7 +287,6 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
 
             @Override
             public void onStop() {
-                super.onStop();
                 removeNotification();
                 stopSelf();
             }
