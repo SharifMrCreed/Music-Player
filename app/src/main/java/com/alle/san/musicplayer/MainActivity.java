@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -47,7 +46,6 @@ import static com.alle.san.musicplayer.util.Globals.PLAYLIST_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.POSITION_KEY;
 import static com.alle.san.musicplayer.util.Globals.SONG_LIST_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.STRING_EXTRA;
-import static com.alle.san.musicplayer.util.Globals.albumBitmap;
 
 public class MainActivity extends AppCompatActivity implements UtilInterfaces.ViewChanger, UtilInterfaces.MusicServiceCallbacks {
 
@@ -327,16 +325,18 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-//            if (fm.getBackStackEntryCount()>0 && !fm.getBackStackEntryAt(fm.getBackStackEntryCount()-1).getName().equals(ALBUM_SONG_LIST_FRAGMENT_TAG)){
+            if (fm.getBackStackEntryCount()>0 && fm.getBackStackEntryAt(fm.getBackStackEntryCount()-1).getName().equals(ALBUM_SONG_LIST_FRAGMENT_TAG)){
                 if (!actionBar.isShowing()) actionBar.show();
-//            }
-            this.getWindow().setStatusBarColor(getColor(R.color.grey_700));
-            super.onBackPressed();
-            if (fm.getBackStackEntryCount()>0) actionBar.setTitle(fm.getBackStackEntryAt(fm.getBackStackEntryCount()-1).getName());
+                this.getWindow().setStatusBarColor(getColor(R.color.grey_700));
+                super.onBackPressed();
+                if (fm.getBackStackEntryCount()>0) actionBar.setTitle(fm.getBackStackEntryAt(fm.getBackStackEntryCount()-1).getName());
+
+            }else{
+                moveTaskToBack(false);
+            }
 
         }
     }
-
 
     @Override
     public void bindMusicService(ServiceConnection serviceConnection) {
