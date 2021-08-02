@@ -2,6 +2,7 @@ package com.alle.san.musicplayer;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -29,6 +30,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.alle.san.musicplayer.models.ArtistModel;
 import com.alle.san.musicplayer.models.MusicFile;
 import com.alle.san.musicplayer.util.Globals;
+import com.alle.san.musicplayer.util.MusicService;
 import com.alle.san.musicplayer.util.StorageUtil;
 import com.alle.san.musicplayer.util.UtilInterfaces;
 import com.google.android.material.navigation.NavigationView;
@@ -42,13 +44,13 @@ import static com.alle.san.musicplayer.util.Globals.FAVORITES;
 import static com.alle.san.musicplayer.util.Globals.FOLDERS_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.MINIMIZED_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.PLAYLIST_FRAGMENT_TAG;
+import static com.alle.san.musicplayer.util.Globals.POSITION_KEY;
 import static com.alle.san.musicplayer.util.Globals.SONG_LIST_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.STRING_EXTRA;
 import static com.alle.san.musicplayer.util.Globals.albumBitmap;
 
-public class MainActivity extends AppCompatActivity implements UtilInterfaces.ViewChanger {
+public class MainActivity extends AppCompatActivity implements UtilInterfaces.ViewChanger, UtilInterfaces.MusicServiceCallbacks {
 
-    private static final String TAG = "MainActivity";
     private static final int STORAGE_REQUEST = 2;
     public static ArrayList<MusicFile> allAlbums = new ArrayList<>();
     public static ArrayList<ArtistModel> allArtists = new ArrayList<>();
@@ -106,7 +108,6 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
             for (MusicFile musicFile : allSongs) {
                 if (!albumNames.contains(musicFile.getAlbum())) {
                     albumNames.add(musicFile.getAlbum());
-                    musicFile.setAlbumImage(albumBitmap(this, musicFile.getData()));
                     albums.add(musicFile);
                 }
             }
@@ -122,10 +123,10 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
             for (MusicFile musicFile : allSongs) {
                 if (!artistsNames.contains(musicFile.getArtist())) {
                     ArtistModel artistModel = new ArtistModel();
-                    ArrayList<Bitmap> one = new ArrayList<>();
+                    ArrayList<String> one = new ArrayList<>();
                     for (MusicFile musicFile1 : allSongs) {
                         if (musicFile1.getArtist().equals(musicFile.getArtist())) {
-                            one.add(albumBitmap(this, musicFile1.getData()));
+                            one.add( musicFile1.getData());
                         }
                     }
                     if (one.size() == 1)
@@ -304,6 +305,7 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
         super.onPause();
     }
 
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -336,4 +338,16 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
     }
 
 
+    @Override
+    public void bindMusicService(ServiceConnection serviceConnection) {
+        Intent serviceIntent = new Intent(this, MusicService.class);
+        bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void startMusicService() {
+        Intent serviceIntent = new Intent(this, MusicService.class);
+        serviceIntent.putExtra(POSITION_KEY, StorageUtil.getPosition(this));
+        startService(serviceIntent);
+    }
 }

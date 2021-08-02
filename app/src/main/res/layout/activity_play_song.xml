@@ -193,7 +193,6 @@
 
         </RelativeLayout>
 
-
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/previous_button"
             android:layout_width="54dp"
@@ -241,7 +240,6 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/next_button"
             android:layout_width="54dp"
@@ -256,7 +254,6 @@
             app:layout_constraintStart_toEndOf="@+id/pause"
             app:layout_constraintTop_toTopOf="@+id/pause"
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
-
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/repeat_button"
@@ -273,7 +270,6 @@
             app:layout_constraintStart_toEndOf="@+id/next_button"
             app:layout_constraintTop_toTopOf="@+id/next_button"
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
-
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/shuffle_button"

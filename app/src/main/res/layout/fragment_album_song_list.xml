@@ -28,11 +28,10 @@
                 app:expandedTitleMarginStart="48dp"
                 app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-                <ImageView
+                <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/album_photo"
                     android:layout_width="match_parent"
                     android:layout_height="300dp"
-                    android:src="@drawable/allecon"
                     app:layout_collapseMode="parallax" />
 
                 <androidx.appcompat.widget.Toolbar

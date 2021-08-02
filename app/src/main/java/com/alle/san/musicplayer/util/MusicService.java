@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.media.MediaBrowserServiceCompat;
 
+import com.alle.san.musicplayer.PlaySongActivity;
 import com.alle.san.musicplayer.R;
 import com.alle.san.musicplayer.models.MusicFile;
 
@@ -42,12 +43,14 @@ import static com.alle.san.musicplayer.util.Globals.ACTION_PREVIOUS;
 import static com.alle.san.musicplayer.util.Globals.ACTION_STOP;
 import static com.alle.san.musicplayer.util.Globals.MUSIC_CHANNEL;
 import static com.alle.san.musicplayer.util.Globals.NOTIFICATION_ID;
+import static com.alle.san.musicplayer.util.Globals.PENDING_REQUEST_CODE;
 import static com.alle.san.musicplayer.util.Globals.POSITION_KEY;
 
 public class MusicService extends MediaBrowserServiceCompat implements MediaPlayer.OnCompletionListener, AudioManager.OnAudioFocusChangeListener {
     private static final String TAG = "MusicService";
     UtilInterfaces.Buttons buttonControls;
     ArrayList<MusicFile> songs = new ArrayList<>();
+    ArrayList<MusicFile> previousPlaylist = new ArrayList<>();
     MediaPlayer mediaPlayer;
     private int resumePosition = 0;
     private boolean ongoingCall = false;
@@ -55,11 +58,12 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
     private TelephonyManager telephonyManager;
     private AudioManager audioManager;
     private MediaSessionCompat mediaSession;
+    private PlaybackStatus playbackStatus;
     private MediaControllerCompat.TransportControls transportControls;
 
     IBinder binder = new MusicBinder();
     int position;
-    MusicFile previousSong;
+    MusicFile previousSong = new MusicFile();
 
 
     @Nullable
@@ -92,8 +96,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        songs = StorageUtil.getPlayingSongs(getApplicationContext());
-        position = intent.getIntExtra(POSITION_KEY, -1);
+        position = intent.getIntExtra(POSITION_KEY, StorageUtil.getPosition(getApplicationContext()));
         //Could not gain focus
         if (!requestAudioFocus()) stopSelf();
         else checkAndPlay();
@@ -102,13 +105,11 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
     }
 
     void checkAndPlay() {
-        if (previousSong == null) {
-            if (!songs.isEmpty() && position != -1) initMediaPlayer(position);
-        } else {
-            if (!songs.isEmpty() && position != -1 && !previousSong.equals(songs.get(position))) {
+        songs = StorageUtil.getPlayingSongs(getApplicationContext());
+        if ((position != -1) && !songs.isEmpty()) {
+            if (!previousSong.equals(songs.get(position)) || previousSong.equals(songs.get(position)) && !songs.equals(previousPlaylist)) {
                 initMediaPlayer(position);
-            } else if (!songs.isEmpty() && position != -1 && resumePosition != 0)
-                resumeMediaPlayer(position);
+            } else if (resumePosition != 0) resumeMediaPlayer(position);
         }
     }
 
@@ -116,6 +117,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         buildNotification(PlaybackStatus.PLAYING);
         updateMetaData();
         previousSong = songs.get(pos);
+        previousPlaylist = songs;
         createMediaPlayer(pos);
         start();
         mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
@@ -150,10 +152,8 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
     public void start() {
         requestAudioFocus();
         if (mediaPlayer == null) checkAndPlay();
-        else if (resumePosition > 0) {
-            seekTo(resumePosition);
-            mediaPlayer.start();
-        } else {
+        else {
+            if (resumePosition > 0) seekTo(resumePosition);
             mediaPlayer.start();
         }
     }
@@ -173,14 +173,16 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
     public void playNextSong() {
         if (StorageUtil.isShuffle(getApplicationContext())) {
             startShuffle();
-        }else if (position == (songs.size() - 1)) {
+        } else if (position == (songs.size() - 1)) {
             position = 0;
         } else {
             position++;
         }
         StorageUtil.setPosition(position, getApplicationContext());
-        buttonControls.playSong(songs.get(position), position);
+        StorageUtil.setCurrentSong(songs.get(position), getApplicationContext());
+        if (buttonControls != null) buttonControls.playSong(songs.get(position), position);
     }
+
     void repeatSong(){
         if (mediaPlayer != null) {
             mediaPlayer.seekTo(0);
@@ -198,7 +200,8 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
             position--;
         }
         StorageUtil.setPosition(position, getApplicationContext());
-        buttonControls.playSong(songs.get(position), position);
+        StorageUtil.setCurrentSong(songs.get(position), getApplicationContext());
+        if (buttonControls != null) buttonControls.playSong(songs.get(position), position);
     }
 
     private void startShuffle() {
@@ -216,6 +219,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
 
     @Override
     public void onCompletion(MediaPlayer mp) {
+        resumePosition = 0;
         if (StorageUtil.isRepeat(getApplicationContext())){
             repeatSong();
         }
@@ -244,8 +248,9 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         mediaSession = new MediaSessionCompat(getApplicationContext(), TAG);
 
         // Enable callbacks from MediaButtons and TransportControls
-        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
-                MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+        mediaSession.setFlags(
+                        MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
+                        MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
 
         // Set an initial PlaybackState with ACTION_PLAY, so media buttons can start the player
         PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder()
@@ -258,8 +263,6 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         transportControls = mediaSession.getController().getTransportControls();
         mediaSession.setActive(true);
 
-        // TODO: 21/07/2021 Correct bugs here 
-        // Attach Callback to receive MediaSession updates
         mediaSession.setCallback(new MediaSessionCompat.Callback() {
             @Override
             public void onPlay() {
@@ -273,6 +276,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
 
             @Override
             public void onSkipToNext() {
+                StorageUtil.getPosition(getApplicationContext());
                 playNextSong();
                 updateMetaData();
                 buildNotification(PlaybackStatus.PLAYING);
@@ -280,6 +284,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
 
             @Override
             public void onSkipToPrevious() {
+                StorageUtil.getPosition(getApplicationContext());
                 playPreviousSong();
                 updateMetaData();
                 buildNotification(PlaybackStatus.PLAYING);
@@ -303,15 +308,16 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
             mediaPlayer.pause();
             buildNotification(PlaybackStatus.PAUSED);
         }
-        buttonControls.songPause();
+        if (buttonControls != null) buttonControls.songPause();
     }
 
     public void resumePlayback(){
         if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
             mediaPlayer.start();
             buildNotification(PlaybackStatus.PLAYING);
-        }else checkAndPlay();
-        buttonControls.songPlay();
+            resumePosition = 0;
+        } else checkAndPlay();
+        if (buttonControls != null) buttonControls.songPlay();
     }
 
     private void updateMetaData() {
@@ -324,8 +330,14 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
     }
 
     public void buildNotification(PlaybackStatus playbackStatus) {
+        this.playbackStatus = playbackStatus;
         int notificationAction = android.R.drawable.ic_media_pause;//needs to be initialized
         PendingIntent play_pauseAction = null;
+        Intent intent = new Intent(getApplicationContext(), PlaySongActivity.class);
+        intent.putExtra(Globals.POSITION_KEY, position);
+        intent.putExtra(Globals.SONGS_KEY, songs);
+        PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(),
+                PENDING_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         //Build a new notification according to the current state of the MediaPlayer
         if (playbackStatus == PlaybackStatus.PLAYING) {
             play_pauseAction = playbackAction(1);
@@ -346,6 +358,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
                 .setSilent(true)
                 .setContentIntent(mediaSession.getController().getSessionActivity())
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setContentIntent(contentIntent)
                 .setContentText(songs.get(StorageUtil.getPosition(getApplicationContext())).getArtist())
                 .setContentTitle(songs.get(StorageUtil.getPosition(getApplicationContext())).getAlbum())
                 .setContentInfo(songs.get(StorageUtil.getPosition(getApplicationContext())).getTitle())
@@ -403,32 +416,34 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         }
     }
 
+    // broadcast receiver for when earphones are unplugged. we pause playback
     private final BroadcastReceiver becomingNoisyReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            //pause audio on ACTION_AUDIO_BECOMING_NOISY
             pause();
             buildNotification(PlaybackStatus.PAUSED);
         }
     };
 
+    //we register the becoming noisy receiver using this method
     private void registerBecomingNoisyReceiver() {
         //register after getting audio focus
         IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
         registerReceiver(becomingNoisyReceiver, intentFilter);
     }
 
+    //Invoked when the audio focus of the system is updated.
     @Override
     public void onAudioFocusChange(int focusState) {
-        //Invoked when the audio focus of the system is updated.
         switch (focusState) {
+            //When the app gains focus:
             case AudioManager.AUDIOFOCUS_GAIN:
-                // resume playback
-                resumePlayback();
+                if (playbackStatus.equals(PlaybackStatus.PLAYING)) resumePlayback();
                 mediaPlayer.setVolume(1.0f, 1.0f);
                 break;
+
+            // Lost focus for an unbounded amount of time: stop playback and release media player
             case AudioManager.AUDIOFOCUS_LOSS:
-                // Lost focus for an unbounded amount of time: stop playback and release media player
                 pausePlayback();
                 if (mediaPlayer != null) {
                     if (mediaPlayer.isPlaying()) {
@@ -439,18 +454,19 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
                 }
                 mediaPlayer = null;
                 break;
+
+            // Lost focus for a short time, but we have to stop playback. We don't release the media
+            // player because playback is likely to resume
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                // Lost focus for a short time, but we have to stop
-                // playback. We don't release the media player because playback
-                // is likely to resume
                 if (mediaPlayer.isPlaying()) {
                     pause();
                     pausePlayback();
                 }
                 break;
+
+            // Slightly Lost focus for a short time of notification or talk back, but it's ok to keep playing
+            // at an attenuated level
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                // Lost focus for a short time, but it's ok to keep playing
-                // at an attenuated level
                 if (mediaPlayer.isPlaying()) mediaPlayer.setVolume(0.1f, 0.1f);
                 break;
         }
@@ -464,7 +480,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
     }
 
     private void removeAudioFocus() {
-        audioManager.abandonAudioFocus(this);
+        if (audioManager != null) audioManager.abandonAudioFocus(this);
     }
 
     //Handle incoming phone calls

@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.alle.san.musicplayer.R;
 import com.alle.san.musicplayer.models.ArtistModel;
+import com.alle.san.musicplayer.util.Globals;
 import com.alle.san.musicplayer.util.UtilInterfaces;
 import com.bumptech.glide.Glide;
 import com.jackandphantom.blurimage.BlurImage;
@@ -93,12 +94,20 @@ public class ArtistRvAdapter extends RecyclerView.Adapter<ArtistRvAdapter.Artist
 
 
         private void imageRetriever(ArtistModel artist) {
-            Glide.with(context).asBitmap().load(artist.getPic1()).centerCrop().into(iv1);
-            Glide.with(context).asBitmap().load(artist.getPic2()).centerCrop().into(iv3);
-            Glide.with(context).asBitmap().load(artist.getPic3()).centerCrop().into(iv2);
-            Bitmap bit = BlurImage.with(context.getApplicationContext()).load(artist.getPic1()).intensity(20).Async(true).getImageBlur();
-            Drawable bitmapDrawable = new BitmapDrawable(context.getResources(), bit);
-            cardView.setBackground(bitmapDrawable);
+            new Thread(()->{
+                Bitmap bitmap2, bitmap3, bitmap4;
+                bitmap2 = Globals.albumBitmap(context, artist.getPic1());
+                bitmap3 = Globals.albumBitmap(context, artist.getPic2());
+                bitmap4 = Globals.albumBitmap(context, artist.getPic3());
+                Bitmap bit = BlurImage.with(context.getApplicationContext()).load(bitmap2).intensity(20).Async(true).getImageBlur();
+                Drawable bitmapDrawable = new BitmapDrawable(context.getResources(), bit);
+                iv1.post(() -> {
+                    Glide.with(context).load(bitmap2).centerCrop().into(iv1);
+                    Glide.with(context).load(bitmap3).centerCrop().into(iv2);
+                    Glide.with(context).load(bitmap4).centerCrop().into(iv3);
+                    cardView.setBackground(bitmapDrawable);
+                });
+            }).start();
             if (artist.getPic3() == null) iv2.setVisibility(View.GONE);
             if (artist.getPic4() == null) iv4.setVisibility(View.GONE);
             if (artist.getPic2() == null) iv3.setVisibility(View.GONE);

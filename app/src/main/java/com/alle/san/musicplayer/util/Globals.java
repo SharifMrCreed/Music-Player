@@ -47,6 +47,7 @@ public class Globals {
 
     //AudioPlayer notification
     public static final int NOTIFICATION_ID = 101;
+    public static final int PENDING_REQUEST_CODE = 1998;
     public static final String MUSIC_CHANNEL = "Music channel";
     public static final String NOTIFICATION_CHANNEL = "Notification channel";
     public static final String PLAYER_NOTIFICATION = "Player notifications";

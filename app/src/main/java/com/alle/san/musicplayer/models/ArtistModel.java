@@ -6,12 +6,12 @@ import android.os.Parcelable;
 
 public class ArtistModel implements Parcelable {
     String name;
-    Bitmap pic1;
-    Bitmap pic2;
-    Bitmap pic3;
-    Bitmap pic4;
+    String pic1;
+    String pic2;
+    String pic3;
+    String pic4;
 
-    public ArtistModel(String name, Bitmap pic1, Bitmap pic2, Bitmap pic3, Bitmap pic4){
+    public ArtistModel(String name, String pic1, String pic2, String pic3, String pic4){
         this.name = name;
         this.pic1 = pic1;
         this.pic3 = pic3;
@@ -22,12 +22,27 @@ public class ArtistModel implements Parcelable {
     public ArtistModel() {
     }
 
+
     protected ArtistModel(Parcel in) {
         name = in.readString();
-        pic1 = in.readParcelable(Bitmap.class.getClassLoader());
-        pic2 = in.readParcelable(Bitmap.class.getClassLoader());
-        pic3 = in.readParcelable(Bitmap.class.getClassLoader());
-        pic4 = in.readParcelable(Bitmap.class.getClassLoader());
+        pic1 = in.readString();
+        pic2 = in.readString();
+        pic3 = in.readString();
+        pic4 = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(name);
+        dest.writeString(pic1);
+        dest.writeString(pic2);
+        dest.writeString(pic3);
+        dest.writeString(pic4);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
     public static final Creator<ArtistModel> CREATOR = new Creator<ArtistModel>() {
@@ -46,33 +61,21 @@ public class ArtistModel implements Parcelable {
         return name;
     }
 
-    public Bitmap getPic4() {
+    public String getPic4() {
         return pic4;
     }
 
-    public Bitmap getPic1() {
+    public String getPic1() {
         return pic1;
     }
 
-    public Bitmap getPic2() {
+    public String getPic2() {
         return pic2;
     }
 
-    public Bitmap getPic3() {
+    public String getPic3() {
         return pic3;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(name);
-        dest.writeParcelable(pic1, flags);
-        dest.writeParcelable(pic2, flags);
-        dest.writeParcelable(pic3, flags);
-        dest.writeParcelable(pic4, flags);
-    }
 }

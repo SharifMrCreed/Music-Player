@@ -125,7 +125,6 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
 
     }
 
-
     public void songPlayPause() {
         if (!this.isDestroyed()){
             if (musicService != null && musicService.isPlaying()) {

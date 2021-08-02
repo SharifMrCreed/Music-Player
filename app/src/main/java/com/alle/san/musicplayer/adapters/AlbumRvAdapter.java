@@ -24,7 +24,7 @@ import com.jackandphantom.blurimage.BlurImage;
 import java.util.ArrayList;
 
 import static com.alle.san.musicplayer.util.Globals.ALBUMS_FRAGMENT_TAG;
-import static com.alle.san.musicplayer.util.Globals.ALBUM_SONG_LIST_FRAGMENT_TAG;
+import static com.alle.san.musicplayer.util.Globals.albumBitmap;
 
 public class AlbumRvAdapter extends RecyclerView.Adapter<AlbumRvAdapter.AlbumViewHolder> {
 
@@ -87,10 +87,13 @@ public class AlbumRvAdapter extends RecyclerView.Adapter<AlbumRvAdapter.AlbumVie
 
 
         private void imageRetriever(MusicFile musicFile) {
-            Glide.with(context).asBitmap().load(musicFile.getAlbumImage()).centerCrop().into(albumImage);
-            Bitmap bit = BlurImage.with(context.getApplicationContext()).load(musicFile.getAlbumImage()).intensity(20).Async(true).getImageBlur();
-            Drawable bitmapDrawable = new BitmapDrawable(context.getResources(), bit);
-            cardView.setBackground(bitmapDrawable);
+            new Thread(() -> {
+                Bitmap bitmap = albumBitmap(itemView.getContext(), musicFile.getData());
+                Bitmap bit = BlurImage.with(context.getApplicationContext()).load(bitmap).intensity(20).Async(true).getImageBlur();
+                Drawable bitmapDrawable = new BitmapDrawable(context.getResources(), bit);
+                albumImage.post(() -> Glide.with(context).asBitmap().load(bitmap).centerCrop().into(albumImage));
+                cardView.post(() -> cardView.setBackground(bitmapDrawable));
+            }).start();
 
         }
     }

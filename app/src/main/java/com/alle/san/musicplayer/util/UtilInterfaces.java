@@ -1,5 +1,8 @@
 package com.alle.san.musicplayer.util;
 
+import android.content.ServiceConnection;
+
+import com.alle.san.musicplayer.MinimizedPlayerFragment;
 import com.alle.san.musicplayer.models.ArtistModel;
 import com.alle.san.musicplayer.models.MusicFile;
 
@@ -18,6 +21,11 @@ public interface UtilInterfaces {
     }
     interface Filter{
         void filter(String s);
+    }
+    interface MusicServiceCallbacks{
+        void bindMusicService(ServiceConnection serviceConnection);
+        void unbindService(ServiceConnection serviceConnection);
+        void startMusicService();
     }
     interface Buttons{
         void playSong(MusicFile currentSong, int position);
