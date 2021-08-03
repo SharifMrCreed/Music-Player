@@ -6,6 +6,7 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.View;
@@ -35,6 +36,7 @@ import com.alle.san.musicplayer.util.UtilInterfaces;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import static com.alle.san.musicplayer.util.Globals.ALBUMS_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.ALBUM_SONG_LIST_FRAGMENT_TAG;
@@ -50,15 +52,14 @@ import static com.alle.san.musicplayer.util.Globals.STRING_EXTRA;
 public class MainActivity extends AppCompatActivity implements UtilInterfaces.ViewChanger, UtilInterfaces.MusicServiceCallbacks {
 
     private static final int STORAGE_REQUEST = 2;
-    public static ArrayList<MusicFile> allAlbums = new ArrayList<>();
-    public static ArrayList<ArtistModel> allArtists = new ArrayList<>();
     int fragmentContainer;
     ActionBar actionBar;
     FragmentManager fm;
 
-    SongListFragment songListFragment = null;
-    AlbumsFragment albumsFragment = null;
-    AlbumSongListFragment albumSongListFragment = null;
+    SongListFragment songListFragment;
+    AlbumsFragment albumsFragment;
+    FoldersFragment foldersFragment;
+    AlbumSongListFragment albumSongListFragment;
 
     CardView miniPlayerCard;
     Toolbar toolbar;
@@ -97,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
         filter = (UtilInterfaces.Filter) songListFragment;
         getAlbums(StorageUtil.getSongsFromStorage(this));
         getArtists(StorageUtil.getSongsFromStorage(this));
+        getFolders();
     }
 
     private void getAlbums(ArrayList<MusicFile> allSongs) {
@@ -109,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
                     albums.add(musicFile);
                 }
             }
-            allAlbums.addAll(albums);
+            StorageUtil.setAlbums(albums, this);
         }).start();
 
     }
@@ -140,7 +142,29 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
                     if (!TextUtils.isEmpty(artistModel.getName())) artists.add(artistModel);
                 }
             }
-            allArtists.addAll(artists);
+            StorageUtil.setArtists(artists, this);
+        }).start();
+
+    }
+
+    private void getFolders() {
+        ArrayList<ArtistModel> artists = new ArrayList<>();
+        new Thread(() -> {
+            HashSet<String> folders = StorageUtil.getSongFolders(Environment.getExternalStorageDirectory());
+            for (String folderName: folders){
+                ArrayList<MusicFile> one = StorageUtil.getSongsFromFolder(this, folderName);
+                ArtistModel artistModel = new ArtistModel();
+                if (one.size() == 1)
+                    artistModel = new ArtistModel(folderName, one.get(0).getData(), null, null, null);
+                else if (one.size() == 2)
+                    artistModel = new ArtistModel(folderName, one.get(0).getData(), one.get(1).getData(), null, null);
+                else if (one.size() == 3)
+                    artistModel = new ArtistModel(folderName, one.get(0).getData(), one.get(1).getData(), one.get(2).getData(), null);
+                else if (one.size() > 3)
+                    artistModel = new ArtistModel(folderName, one.get(0).getData(), one.get(1).getData(), one.get(2).getData(), one.get(3).getData());
+                artists.add(artistModel);
+            }
+            StorageUtil.setFolders(artists, this);
         }).start();
 
     }
@@ -231,7 +255,6 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
 
     @Override
     public void changeFragment(ArtistModel artistModel, String tag) {
-
         if (albumSongListFragment == null) {
             albumSongListFragment = new AlbumSongListFragment();
         }
@@ -261,9 +284,9 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
     public void openPlaySongActivity(MusicFile song) {
         if (playSongIntent == null) {
             playSongIntent = new Intent(this, PlaySongActivity.class);
-            playSongIntent.putExtra(Globals.POSITION_KEY, StorageUtil.getPosition(this));
-            playSongIntent.putExtra(Globals.SONGS_KEY, StorageUtil.getPlayingSongs(this));
         }
+        playSongIntent.putExtra(Globals.POSITION_KEY, StorageUtil.getPosition(this));
+        playSongIntent.putExtra(Globals.SONGS_KEY, StorageUtil.getPlayingSongs(this));
         startActivity(playSongIntent);
     }
 
@@ -284,7 +307,8 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
                     initFragment(new PlayListFragment(), PLAYLIST_FRAGMENT_TAG);
                     break;
                 case (R.id.nav_folders):
-                    initFragment(albumsFragment, FOLDERS_FRAGMENT_TAG);
+                    if (foldersFragment == null) foldersFragment = new FoldersFragment();
+                    initFragment(foldersFragment, FOLDERS_FRAGMENT_TAG);
                     break;
                 case (R.id.nav_settings):
                     //TODO: TBI...

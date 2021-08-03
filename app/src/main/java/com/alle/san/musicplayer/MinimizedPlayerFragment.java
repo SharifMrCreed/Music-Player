@@ -151,6 +151,7 @@ public class MinimizedPlayerFragment extends Fragment implements ServiceConnecti
 
     private void loadViews() {
         if (StorageUtil.getCurrentSong(getContext()) != null) {
+            parent.setOnClickListener(view1 -> viewChanger.openPlaySongActivity(StorageUtil.getCurrentSong(getContext())));
             songName.setText(StorageUtil.getCurrentSong(getContext()).getTitle());
             artistName.setText(StorageUtil.getCurrentSong(getContext()).getArtist());
             Bitmap bitmap = Globals.albumBitmap(getContext(), StorageUtil.getCurrentSong(getContext()).getData());

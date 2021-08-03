@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".FoldersFragment">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_album_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="12dp"
+        android:scrollbars="vertical"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="2"
+        tools:listitem="@layout/rv_artist_item" />
+
+    <LinearLayout
+        android:id="@+id/nothing_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:visibility="gone"
+        android:paddingTop="120dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:text="@string/nothing_here"
+            android:textSize="28sp" />
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/iv_add"
+            android:layout_width="90dp"
+            android:layout_height="100dp"
+            android:src="@drawable/ic_playlist_white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/no_songs_to_show"
+            android:textColor="@color/white_t80" />
+    </LinearLayout>
+
+
+
+</RelativeLayout>

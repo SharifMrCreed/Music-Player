@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.NonNull;
+
 import java.util.Objects;
 
 public class MusicFile implements Parcelable {
@@ -11,50 +13,19 @@ public class MusicFile implements Parcelable {
     String title;
     String album;
     String data;
+    String dateAdded;
     String artist;
     int duration;
     Bitmap albumImage;
 
-    protected MusicFile(Parcel in) {
-        _id = in.readString();
-        title = in.readString();
-        album = in.readString();
-        data = in.readString();
-        artist = in.readString();
-        duration = in.readInt();
-        albumImage = in.readParcelable(Bitmap.class.getClassLoader());
-        playlist = in.createStringArray();
-    }
-
-    public static final Creator<MusicFile> CREATOR = new Creator<MusicFile>() {
-        @Override
-        public MusicFile createFromParcel(Parcel in) {
-            return new MusicFile(in);
-        }
-
-        @Override
-        public MusicFile[] newArray(int size) {
-            return new MusicFile[size];
-        }
-    };
-
-    public String[] getPlaylist() {
-        return playlist;
-    }
-
-    public void setPlaylist(String[] playlist) {
-        this.playlist = playlist;
-    }
-
-    String[] playlist;
-
     public MusicFile() {
     }
 
-    public MusicFile(String _id, String title, String album, String data, String artist, int duration) {
+    public MusicFile(String _id, String title, String album, String data, String artist, int duration, String dateAdded) {
         this.title = title;
         this.album = album;
         this.data = data;
+        this.dateAdded = dateAdded;
         this._id = _id;
         this.artist = artist;
         this.duration = duration;
@@ -70,6 +41,28 @@ public class MusicFile implements Parcelable {
     }
 
 
+    protected MusicFile(Parcel in) {
+        _id = in.readString();
+        title = in.readString();
+        album = in.readString();
+        data = in.readString();
+        dateAdded = in.readString();
+        artist = in.readString();
+        duration = in.readInt();
+        albumImage = in.readParcelable(Bitmap.class.getClassLoader());
+    }
+
+    public static final Creator<MusicFile> CREATOR = new Creator<MusicFile>() {
+        @Override
+        public MusicFile createFromParcel(Parcel in) {
+            return new MusicFile(in);
+        }
+
+        @Override
+        public MusicFile[] newArray(int size) {
+            return new MusicFile[size];
+        }
+    };
 
     public Bitmap getAlbumImage() {
         return albumImage;
@@ -103,6 +96,7 @@ public class MusicFile implements Parcelable {
         return duration;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "{\n title: '" + title + '\'' +
@@ -136,14 +130,14 @@ public class MusicFile implements Parcelable {
     }
 
     @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeString(_id);
-        parcel.writeString(title);
-        parcel.writeString(album);
-        parcel.writeString(data);
-        parcel.writeString(artist);
-        parcel.writeInt(duration);
-        parcel.writeParcelable(albumImage, i);
-        parcel.writeStringArray(playlist);
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(_id);
+        dest.writeString(title);
+        dest.writeString(album);
+        dest.writeString(data);
+        dest.writeString(dateAdded);
+        dest.writeString(artist);
+        dest.writeInt(duration);
+        dest.writeParcelable(albumImage, flags);
     }
 }

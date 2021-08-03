@@ -25,15 +25,18 @@ import com.jackandphantom.blurimage.BlurImage;
 import java.util.ArrayList;
 
 import static com.alle.san.musicplayer.util.Globals.ARTISTS_FRAGMENT_TAG;
+import static com.alle.san.musicplayer.util.Globals.FOLDERS_FRAGMENT_TAG;
 
 public class ArtistRvAdapter extends RecyclerView.Adapter<ArtistRvAdapter.ArtistViewHolder> {
 
     Context context;
     ArrayList<ArtistModel> artists = new ArrayList<>();
+    String category;
     UtilInterfaces.ViewChanger utilInterfaces;
 
-    public ArtistRvAdapter(Context context) {
+    public ArtistRvAdapter(Context context, String category) {
         this.context = context;
+        this.category = category;
     }
 
     public void setArtists(ArrayList<ArtistModel> artists) {
@@ -45,7 +48,7 @@ public class ArtistRvAdapter extends RecyclerView.Adapter<ArtistRvAdapter.Artist
     @Override
     public ArtistViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.rv_artist_item, parent, false);
-        return new ArtistViewHolder(view, artists, utilInterfaces, context);
+        return new ArtistViewHolder(view, artists, utilInterfaces, context, category);
     }
 
     @Override
@@ -65,16 +68,18 @@ public class ArtistRvAdapter extends RecyclerView.Adapter<ArtistRvAdapter.Artist
         ImageView iv3;
         ImageView iv4;
         CardView cardView;
+        String category;
         LinearLayoutCompat linearLayout;
         ArrayList<ArtistModel> albums;
         Context context;
         UtilInterfaces.ViewChanger utilInterfaces;
 
-        public ArtistViewHolder(@NonNull View itemView, ArrayList<ArtistModel> albums, UtilInterfaces.ViewChanger utilInterfaces, Context context) {
+        public ArtistViewHolder(@NonNull View itemView, ArrayList<ArtistModel> albums, UtilInterfaces.ViewChanger utilInterfaces, Context context, String category) {
             super(itemView);
             this.albums = albums;
             this.utilInterfaces = utilInterfaces;
             this.context = context;
+            this.category = category;
             iv1 = itemView.findViewById(R.id.iv_1);
             iv2 = itemView.findViewById(R.id.iv_2);
             iv3 = itemView.findViewById(R.id.iv_3);
@@ -88,7 +93,7 @@ public class ArtistRvAdapter extends RecyclerView.Adapter<ArtistRvAdapter.Artist
             ArtistModel musicFile = albums.get(position);
             imageRetriever(musicFile);
             artistName.setText(musicFile.getName());
-            linearLayout.setOnClickListener(view -> utilInterfaces.changeFragment(musicFile, ARTISTS_FRAGMENT_TAG));
+            linearLayout.setOnClickListener(view -> utilInterfaces.changeFragment(musicFile, category == null ? ARTISTS_FRAGMENT_TAG : FOLDERS_FRAGMENT_TAG));
 
         }
 

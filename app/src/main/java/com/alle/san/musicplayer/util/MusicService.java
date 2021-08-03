@@ -3,6 +3,7 @@ package com.alle.san.musicplayer.util;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -14,6 +15,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.provider.MediaStore;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
@@ -32,6 +34,7 @@ import com.alle.san.musicplayer.PlaySongActivity;
 import com.alle.san.musicplayer.R;
 import com.alle.san.musicplayer.models.MusicFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -120,8 +123,6 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         previousPlaylist = songs;
         createMediaPlayer(pos);
         start();
-        mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-        mediaPlayer.setOnCompletionListener(this);
     }
 
     void resumeMediaPlayer(int pos) {
@@ -227,21 +228,37 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
     }
 
     public void createMediaPlayer(int songPosition) {
-        Uri uri = Uri.parse(songs.get(songPosition).getData());
+        Uri uri = getSongUri(Integer.parseInt(songs.get(songPosition).get_id()));
         StorageUtil.setCurrentSong(songs.get(songPosition), getApplication());
         if (mediaPlayer != null) {
             mediaPlayer.stop();
-            mediaPlayer.release();
+            mediaPlayer.reset();
         }
 
-        mediaPlayer = new MediaPlayer();
         mediaPlayer = MediaPlayer.create(getBaseContext(), uri);
-        mediaPlayer.setAudioAttributes(
-                new AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .build()
-        );
+        if (mediaPlayer == null) {
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setAudioAttributes(
+                    new AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .build()
+
+            );
+            try {
+                mediaPlayer.setDataSource(getBaseContext(), uri);
+                mediaPlayer.prepare();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
+        mediaPlayer.setOnCompletionListener(this);
+
+    }
+
+    public static Uri getSongUri(int songId) {
+        return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, songId);
     }
 
     private void initMediaSession() {

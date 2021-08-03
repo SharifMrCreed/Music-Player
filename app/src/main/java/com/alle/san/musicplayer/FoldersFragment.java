@@ -16,27 +16,31 @@ import com.alle.san.musicplayer.util.StorageUtil;
 
 import java.util.ArrayList;
 
-public class ArtistsFragment extends Fragment {
+import static com.alle.san.musicplayer.util.Globals.FOLDERS_FRAGMENT_TAG;
 
-    private ArrayList<ArtistModel> allArtists;
+public class FoldersFragment extends Fragment {
     RecyclerView rvArtistList;
+    private ArrayList<ArtistModel> allFolders;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_artists, container, false);
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_folders, container, false);
         rvArtistList = view.findViewById(R.id.rv_album_fragment);
         LinearLayout nothingLayout = view.findViewById(R.id.nothing_layout);
-        allArtists = StorageUtil.getArtists(getContext());
-        if (allArtists == null) allArtists = new ArrayList<>();
-        if (allArtists.isEmpty()) nothingLayout.setVisibility(View.VISIBLE);
-        initRecyclerView();
+        allFolders = StorageUtil.getFolders(getContext());
+        if (allFolders == null) allFolders = new ArrayList<>();
+        if (allFolders.isEmpty()) nothingLayout.setVisibility(View.VISIBLE);
+
+        initFoldersRecyclerView();
         return view;
     }
-    private void initRecyclerView() {
-        ArtistRvAdapter artistRvAdapter = new ArtistRvAdapter(getContext(), null);
+
+    private void initFoldersRecyclerView() {
+        ArtistRvAdapter artistRvAdapter = new ArtistRvAdapter(getContext(), FOLDERS_FRAGMENT_TAG);
         rvArtistList.setLayoutManager(new GridLayoutManager(getContext(), 2));
         rvArtistList.setAdapter(artistRvAdapter);
-        artistRvAdapter.setArtists(allArtists);
+        artistRvAdapter.setArtists(allFolders);
     }
 }
