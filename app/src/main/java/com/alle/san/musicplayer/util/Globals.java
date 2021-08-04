@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaMetadataRetriever;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
@@ -28,10 +29,19 @@ public class Globals {
     public static final String  PLAYLIST_FRAGMENT_TAG = "Playlists";
     public static final String  ALBUM_SONG_LIST_FRAGMENT_TAG = "Album Songs";
     public static final String PLAY_SONG_ACTIVITY_TAG = "Play Song Fragment Tag";
+    public static final String ABOUT_DEVELOPER_FRAGMENT_TAG = "About developer";
     public static final String MINIMIZED_FRAGMENT_TAG = "minimized fragment";
     public static final String ALBUMS_FRAGMENT_TAG = "Albums";
     public static final String FOLDERS_FRAGMENT_TAG = "Folders";
     public static final String FAVORITES = "Favorites";
+
+    //Sorts
+    public static final String TITLE = MediaStore.Audio.Media.TITLE;
+    public static final String DATE_ADDED = MediaStore.Audio.Media.DATE_ADDED;
+    public static final String ARTIST = MediaStore.Audio.Media.ARTIST;
+    public static final String ALBUM = MediaStore.Audio.Media.ALBUM;
+    public static final String ASCENDING_ORDER = "ASC";
+    public static final String DESCENDING_ORDER = "DESC";
 
     //keys
     public static final String AUDIO_PLAYER_STORAGE = " com.alle.san.audioplayer.STORAGE";
@@ -39,6 +49,8 @@ public class Globals {
     public static final String POSITION_KEY = "Position";
     public static final String PLAYLIST_KEY = "playlist";
     public static final String RESUME_KEY = "resume";
+    public static final String SORT_ORDER = "SortOrder";
+    public static final String ORDER = "Order";
     public static final String SONGS_KEY = "Songs";
     public static final String CURRENT_SONG = "current song";
     public static final String SHUFFLE_KEY = "shuffle";
@@ -74,6 +86,26 @@ public class Globals {
         else
             return ((BitmapDrawable) Objects.requireNonNull(ContextCompat.getDrawable(context, R.drawable.allecon))).getBitmap();
     }
+    public  static String getOrder(Context context){
+        if (StorageUtil.isWhichOrder(context)) return Globals.DESCENDING_ORDER;
+        else return Globals.ASCENDING_ORDER;
+    }
+
+    public static final String ABOUT_DEVELOPER = "I am passionate about" +
+            "building great apps. For me app development" +
+            "is not just about coding, it's about creating" +
+            "awesome user experiences." +
+            "\n\n" +
+            "I have worked on a variety of mobile apps and would like" +
+            "to work on more. I am seeking out opportunities" +
+            "to collaborate with companies / agencies /individuals," +
+            " not just work for them but work with them to solve" +
+            " real business-problems in a way that optimizes all of our" +
+            "respective experiences and collective knowledge." +
+            "\n\n" +
+            "Note: If you want to know the cost of" +
+            "building a mobile app, and how we can work together, my contact info is" +
+            "listed at the bottom. lets for sure chat about how we can work together.";
 
     public static void showPlaylistDialog(Context context, MusicFile song) {
         Dialog dialog = new Dialog(context);

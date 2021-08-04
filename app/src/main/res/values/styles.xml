@@ -20,6 +20,18 @@
         <item name="android:popupBackground">@color/grey_900</item>
     </style>
 
+    <style name="BottomSheetStyle">
+        <item name="android:background">@drawable/nav_bg</item>
+    </style>
+
+    <style name="bottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <style name="BottomSheetDialogTheme" parent="Theme.Design.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BottomSheetStyle</item>
+    </style>
+
     <style name="DialogStyle" parent="Theme.AppCompat.Dialog.Alert">
         <item name="android:background">@android:color/transparent</item>
         <item name="dialogCornerRadius">16dp</item>

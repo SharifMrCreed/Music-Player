@@ -8,9 +8,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.SearchView;
+import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -33,11 +39,13 @@ import com.alle.san.musicplayer.util.Globals;
 import com.alle.san.musicplayer.util.MusicService;
 import com.alle.san.musicplayer.util.StorageUtil;
 import com.alle.san.musicplayer.util.UtilInterfaces;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import static com.alle.san.musicplayer.util.Globals.ABOUT_DEVELOPER_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.ALBUMS_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.ALBUM_SONG_LIST_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.ARTISTS_FRAGMENT_TAG;
@@ -95,9 +103,9 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
     private void initViewPaging() {
         if (songListFragment == null) songListFragment = new SongListFragment();
         initFragment(songListFragment, SONG_LIST_FRAGMENT_TAG);
-        filter = (UtilInterfaces.Filter) songListFragment;
-        getAlbums(StorageUtil.getSongsFromStorage(this));
-        getArtists(StorageUtil.getSongsFromStorage(this));
+        filter = songListFragment;
+        getAlbums(StorageUtil.getSongsFromStorage(this, StorageUtil.getSortOrder(this), Globals.getOrder(this) ));
+        getArtists(StorageUtil.getSongsFromStorage(this, StorageUtil.getSortOrder(this), Globals.getOrder(this)));
         getFolders();
     }
 
@@ -169,6 +177,37 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
 
     }
 
+    private void sortSongs(){
+        RadioButton rbTitle, rbRecently, rbArtists, rbAlbum;
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme);
+        View view = LayoutInflater.from(this).inflate(R.layout.sort_bottom_sheet,
+                findViewById(R.id.parent), false);
+        RadioGroup radioGroup = view.findViewById(R.id.sort_radio_group);
+        rbTitle = view.findViewById(R.id.rb_title);
+        rbAlbum = view.findViewById(R.id.rb_album);
+        rbArtists = view.findViewById(R.id.rb_artists);
+        rbRecently = view.findViewById(R.id.rb_recently_added);
+        if (StorageUtil.getSortOrder(this).equals(Globals.TITLE)) rbTitle.setChecked(true);
+        if (StorageUtil.getSortOrder(this).equals(Globals.ARTIST)) rbArtists.setChecked(true);
+        if (StorageUtil.getSortOrder(this).equals(Globals.DATE_ADDED)) rbRecently.setChecked(true);
+        if (StorageUtil.getSortOrder(this).equals(Globals.ALBUM)) rbAlbum.setChecked(true);
+        CheckBox checkBox = view.findViewById(R.id.checkBox);
+        radioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            RadioButton radioButton = view.findViewById(checkedId);
+            if (radioButton.getText().equals(getString(R.string.title))) StorageUtil.setSortOrder(Globals.TITLE, MainActivity.this);
+            else if (radioButton.getText().equals(getString(R.string.recently_added))) StorageUtil.setSortOrder(Globals.DATE_ADDED, MainActivity.this);
+            else if (radioButton.getText().equals(getString(R.string.artist))) StorageUtil.setSortOrder(Globals.ARTIST, MainActivity.this);
+            else if (radioButton.getText().equals(getString(R.string.albums))) StorageUtil.setSortOrder(Globals.ALBUM, MainActivity.this);
+            initFragment(new SongListFragment(), SONG_LIST_FRAGMENT_TAG);
+            bottomSheetDialog.dismiss();
+        });
+        checkBox.setChecked(StorageUtil.isWhichOrder(this));
+        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> StorageUtil.setWhichOrder(this));
+        bottomSheetDialog.setContentView(view);
+        bottomSheetDialog.show();
+
+    }
+
     private void initFragment(Fragment fragment, String tag) {
         Bundle args = new Bundle();
         args.putString(ALBUMS_FRAGMENT_TAG, tag);
@@ -211,6 +250,12 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
         });
         return true;
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_sort) sortSongs();
+        return true;
     }
 
     @Override
@@ -310,6 +355,9 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
                     if (foldersFragment == null) foldersFragment = new FoldersFragment();
                     initFragment(foldersFragment, FOLDERS_FRAGMENT_TAG);
                     break;
+                case (R.id.nav_about):
+                    initFragment(new AboutDeveloperFragment(), ABOUT_DEVELOPER_FRAGMENT_TAG);
+                    break;
                 case (R.id.nav_settings):
                     //TODO: TBI...
                     break;
@@ -349,7 +397,7 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            if (fm.getBackStackEntryCount()>0 && fm.getBackStackEntryAt(fm.getBackStackEntryCount()-1).getName().equals(ALBUM_SONG_LIST_FRAGMENT_TAG)){
+            if (fm.getBackStackEntryCount()>0 && (fm.getBackStackEntryAt(fm.getBackStackEntryCount()-1).getName().equals(ALBUM_SONG_LIST_FRAGMENT_TAG ) || fm.getBackStackEntryAt(fm.getBackStackEntryCount()-1).getName().equals(ABOUT_DEVELOPER_FRAGMENT_TAG ) )){
                 if (!actionBar.isShowing()) actionBar.show();
                 this.getWindow().setStatusBarColor(getColor(R.color.grey_700));
                 super.onBackPressed();

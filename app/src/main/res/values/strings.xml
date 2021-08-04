@@ -3,7 +3,7 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="song_name">Song Name</string>
     <string name="artist_name">Artist Name</string>
-    <string name="artist">Artist name, album name</string>
+    <string name="artist">Artist</string>
     <string name="_1_00">1:00</string>
     <string name="_4_00">4:00</string>
     <string name="search">Search…</string>
@@ -37,4 +37,10 @@
     <string name="_name">name</string>
     <string name="no_songs_to_show">No songs to show</string>
     <string name="no_albums">No albums on this device</string>
+    <string name="sort">Sort by</string>
+    <string name="semujju_sharif">Semujju Sharif</string>
+    <string name="about">About us</string>
+    <string name="title">Title</string>
+    <string name="recently_added">Recently Added</string>
+    <string name="reverse_order">Reverse order</string>
 </resources>

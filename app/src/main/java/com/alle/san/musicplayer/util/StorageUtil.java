@@ -23,11 +23,13 @@ import static com.alle.san.musicplayer.util.Globals.AUDIO_PLAYER_PLAYLISTS;
 import static com.alle.san.musicplayer.util.Globals.AUDIO_PLAYER_STORAGE;
 import static com.alle.san.musicplayer.util.Globals.CURRENT_SONG;
 import static com.alle.san.musicplayer.util.Globals.FOLDERS_FRAGMENT_TAG;
+import static com.alle.san.musicplayer.util.Globals.ORDER;
 import static com.alle.san.musicplayer.util.Globals.PLAYLIST_KEY;
 import static com.alle.san.musicplayer.util.Globals.POSITION_KEY;
 import static com.alle.san.musicplayer.util.Globals.REPEAT_KEY;
 import static com.alle.san.musicplayer.util.Globals.SHUFFLE_KEY;
 import static com.alle.san.musicplayer.util.Globals.SONGS_KEY;
+import static com.alle.san.musicplayer.util.Globals.SORT_ORDER;
 
 public class StorageUtil {
     private static SharedPreferences preferences;
@@ -41,7 +43,7 @@ public class StorageUtil {
                 String fileName = file1.getName();
                 if (fileName.endsWith(".mp3") || fileName.endsWith(".m4a") ||
                         fileName.endsWith(".wav") || fileName.endsWith(".acc") && !folderNames.contains(file.getName())) {
-                    songsList.add(file.getName());
+                    if (file.getName().length() > 1)songsList.add(file.getName());
                     folderNames.add(file.getName());
 
                 }
@@ -53,7 +55,7 @@ public class StorageUtil {
         return songsList;
     }
 
-    public static ArrayList<MusicFile> getSongsFromStorage(Context context){
+    public static ArrayList<MusicFile> getSongsFromStorage(Context context, String sortOrder, String order){
         ArrayList<MusicFile> musicFiles = new ArrayList<>();
         Uri uri;
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) uri = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL);
@@ -68,7 +70,7 @@ public class StorageUtil {
                 MediaStore.Audio.Media.DATE_ADDED
         };
         Cursor cursor = context.getContentResolver()
-                .query(uri, projection, null, null, MediaStore.Audio.Media.TITLE);
+                .query(uri, projection, null, null, sortOrder + " " + order);
         if(cursor != null){
             while (cursor.moveToNext()){
                 String songName = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
@@ -287,6 +289,19 @@ public class StorageUtil {
         editor.apply();
     }
 
+    public static boolean isWhichOrder(Context context){
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_PLAYLISTS, Context.MODE_PRIVATE);
+        return preferences.getBoolean(ORDER, false);
+    }
+
+    public static void setWhichOrder(Context context){
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_PLAYLISTS, Context.MODE_PRIVATE);
+        boolean isRepeating = preferences.getBoolean(ORDER, false);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean(ORDER, !isRepeating);
+        editor.apply();
+    }
+
     public static void setPosition(int index, Context context) {
         preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
@@ -323,6 +338,17 @@ public class StorageUtil {
         String json = gson.toJson(arrayList);
         editor.putString(PLAYLIST_KEY, json);
         editor.apply();
+    }
+
+    public static void setSortOrder(String sortBy, Context context ) {
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_PLAYLISTS, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(SORT_ORDER, sortBy);
+        editor.apply();
+    }
+    public static String getSortOrder(Context context ) {
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_PLAYLISTS, Context.MODE_PRIVATE);
+        return preferences.getString(SORT_ORDER, Globals.TITLE);
     }
 
     public static ArrayList<String> getPlaylists(Context context) {

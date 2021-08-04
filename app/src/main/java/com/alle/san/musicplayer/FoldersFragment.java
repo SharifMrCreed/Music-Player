@@ -1,5 +1,7 @@
 package com.alle.san.musicplayer;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,11 +18,14 @@ import com.alle.san.musicplayer.util.StorageUtil;
 
 import java.util.ArrayList;
 
+import static com.alle.san.musicplayer.util.Globals.AUDIO_PLAYER_STORAGE;
 import static com.alle.san.musicplayer.util.Globals.FOLDERS_FRAGMENT_TAG;
 
-public class FoldersFragment extends Fragment {
+public class  FoldersFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener{
     RecyclerView rvArtistList;
     private ArrayList<ArtistModel> allFolders;
+    SharedPreferences preferences;
+    private ArtistRvAdapter artistRvAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -33,14 +38,20 @@ public class FoldersFragment extends Fragment {
         if (allFolders == null) allFolders = new ArrayList<>();
         if (allFolders.isEmpty()) nothingLayout.setVisibility(View.VISIBLE);
 
+        preferences = getContext().getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
         initFoldersRecyclerView();
         return view;
     }
 
     private void initFoldersRecyclerView() {
-        ArtistRvAdapter artistRvAdapter = new ArtistRvAdapter(getContext(), FOLDERS_FRAGMENT_TAG);
+        artistRvAdapter = new ArtistRvAdapter(getContext(), FOLDERS_FRAGMENT_TAG);
         rvArtistList.setLayoutManager(new GridLayoutManager(getContext(), 2));
         rvArtistList.setAdapter(artistRvAdapter);
+        artistRvAdapter.setArtists(allFolders);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         artistRvAdapter.setArtists(allFolders);
     }
 }

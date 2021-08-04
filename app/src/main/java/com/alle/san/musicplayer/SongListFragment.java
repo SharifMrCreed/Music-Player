@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.alle.san.musicplayer.adapters.SongRecyclerAdapter;
 import com.alle.san.musicplayer.models.MusicFile;
+import com.alle.san.musicplayer.util.Globals;
 import com.alle.san.musicplayer.util.StorageUtil;
 import com.alle.san.musicplayer.util.UtilInterfaces;
 
@@ -30,7 +31,7 @@ public class SongListFragment extends Fragment implements UtilInterfaces.Filter 
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_song_list, container, false);
         recyclerView = view.findViewById(R.id.rv_song_list);
-        songs = getSongsFromStorage(getContext());
+        songs = getSongsFromStorage(getContext(), StorageUtil.getSortOrder(getContext()), Globals.getOrder(getContext()) );
         songRecyclerAdapter = new SongRecyclerAdapter(songs);
         LinearLayout nothingLayout = view.findViewById(R.id.nothing_layout);
         if (songs.isEmpty()) nothingLayout.setVisibility(View.VISIBLE);

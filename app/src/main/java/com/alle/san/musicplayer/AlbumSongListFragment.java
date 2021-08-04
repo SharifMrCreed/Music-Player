@@ -188,7 +188,7 @@ public class AlbumSongListFragment extends Fragment {
     }
 
     private ArrayList<MusicFile> getAlbumSongs() {
-        ArrayList<MusicFile> allSongs = StorageUtil.getSongsFromStorage(context);
+        ArrayList<MusicFile> allSongs = StorageUtil.getSongsFromStorage(context, StorageUtil.getSortOrder(context), Globals.getOrder(context));
         ArrayList<MusicFile> album = new ArrayList<>();
         for (MusicFile musicFile : allSongs)
             if (musicFile.getAlbum().equals(song.getAlbum())) album.add(musicFile);
@@ -196,7 +196,7 @@ public class AlbumSongListFragment extends Fragment {
     }
 
     private ArrayList<MusicFile> getArtistSongs() {
-        ArrayList<MusicFile> allSongs = StorageUtil.getSongsFromStorage(context);
+        ArrayList<MusicFile> allSongs = StorageUtil.getSongsFromStorage(context, StorageUtil.getSortOrder(context), Globals.getOrder(context));
         ArrayList<MusicFile> artists = new ArrayList<>();
         for (MusicFile musicFile : allSongs)
             if (musicFile.getArtist().equals(artist.getName())) artists.add(musicFile);

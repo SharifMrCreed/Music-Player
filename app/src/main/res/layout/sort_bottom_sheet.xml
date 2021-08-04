@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bottom_sheet_style">
+
+    <FrameLayout
+        android:id="@+id/line_bottom_sheet"
+        android:layout_width="60dp"
+        android:layout_height="4dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/line_bottom_sheet" />
+
+    <TextView
+        android:id="@+id/tv"
+        style="@style/TextAppearance.AppCompat.Large"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/line_bottom_sheet"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="8dp"
+        android:text="@string/sort"
+        android:textColor="@color/white_t80"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <RadioGroup
+        android:id="@+id/sort_radio_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv"
+        android:layout_margin="16dp">
+
+        <RadioButton
+            android:id="@+id/rb_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:textColor="@color/white_t80"
+            android:text="@string/title"
+            android:textSize="16sp" />
+
+        <RadioButton
+            android:id="@+id/rb_recently_added"
+            android:textColor="@color/white_t80"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:text="@string/recently_added"
+            android:textSize="16sp" />
+
+        <RadioButton
+            android:id="@+id/rb_artists"
+            android:layout_width="match_parent"
+            android:textColor="@color/white_t80"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:text="@string/artist"
+            android:textSize="16sp" />
+
+        <RadioButton
+            android:id="@+id/rb_album"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white_t80"
+            android:checked="false"
+            android:text="@string/albums"
+            android:textSize="16sp" />
+    </RadioGroup>
+
+    <CheckBox
+        android:id="@+id/checkBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/reverse_order"
+        android:textColor="@color/white_t80"
+        android:layout_below="@id/sort_radio_group"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"/>
+
+
+</RelativeLayout>
