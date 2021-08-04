@@ -1,14 +1,15 @@
 package com.alle.san.musicplayer.util;
 
 import android.app.Dialog;
+import android.content.ContentUris;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -86,10 +87,25 @@ public class Globals {
         else
             return ((BitmapDrawable) Objects.requireNonNull(ContextCompat.getDrawable(context, R.drawable.allecon))).getBitmap();
     }
-    public  static String getOrder(Context context){
+
+    public static String getOrder(Context context) {
         if (StorageUtil.isWhichOrder(context)) return Globals.DESCENDING_ORDER;
         else return Globals.ASCENDING_ORDER;
     }
+
+    public static Uri getSongUri(int songId) {
+        return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, songId);
+    }
+
+    public static final String WHATSAPP_URL = "https://wa.me/256705944594/?I%20just%20saw%20your%20Music" +
+            "%20player%20and%20I%20think%20its%20awesome.%20I%20would%20like%20to%20work%20with%20you%20on" +
+            "%20a%20project.";
+
+    public static final String LINKED_IN_URL = "https://www.linkedin.com/in/semujju-sharif-abdukarim-735a03158/";
+
+    public static final String INSTAGRAM_URL = "https://www.instagram.com/shareefcreed?r=nametag";
+
+    public static final String FACEBOOK_URL = "https://www.facebook.com/semujju.sharif";
 
     public static final String ABOUT_DEVELOPER = "I am passionate about" +
             "building great apps. For me app development" +

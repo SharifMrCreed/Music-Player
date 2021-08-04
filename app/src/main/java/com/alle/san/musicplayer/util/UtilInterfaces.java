@@ -17,7 +17,19 @@ public interface UtilInterfaces {
         void changeFragment(ArtistModel artistModel, String tag);
         void changeFragment(String playlistName, String tag);
         void openPlaySongActivity(MusicFile song);
-        void onBackPressed();
+    }
+
+    interface songPopUpMenu {
+        void shareMusicFile(String id);
+        void deleteMusicFile(String id);
+    }
+
+    interface ContactThrough{
+        void whatsApp();
+        void facebook();
+        void instagram();
+        void gmail();
+        void linkedIn();
     }
     interface Filter{
         void filter(String s);

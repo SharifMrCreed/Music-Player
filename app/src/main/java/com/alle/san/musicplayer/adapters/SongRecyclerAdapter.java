@@ -26,6 +26,7 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
 
     ArrayList<MusicFile> songs;
     UtilInterfaces.ViewChanger utilInterfaces;
+    UtilInterfaces.songPopUpMenu songPopUpMenu;
 
     public SongRecyclerAdapter(ArrayList<MusicFile> songs) {
         this.songs = songs;
@@ -89,14 +90,20 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
                 popupMenu.setOnMenuItemClickListener(item -> {
                     int itemId = item.getItemId();
                     if (itemId == R.id.pop_up_delete) {
-                        delete();
-                    } else if (itemId == R.id.pop_up_share) {
-                        share();
-                    } else if (itemId == R.id.pop_up_play) {
+                        songPopUpMenu.deleteMusicFile(song.get_id());
+                        songs.remove(position);
+                        notifyItemRemoved(position);
+                    }
+                    else if (itemId == R.id.pop_up_share) {
+                        songPopUpMenu.shareMusicFile(song.get_id());
+                    }
+                    else if (itemId == R.id.pop_up_play) {
                         utilInterfaces.changeFragment(PLAY_SONG_ACTIVITY_TAG, songs, position);
-                    } else if (itemId == R.id.pop_up_to_playlist) {
-                        addToPlayList(song);
-                    } else if (itemId == R.id.pop_up_details) {
+                    }
+                    else if (itemId == R.id.pop_up_to_playlist) {
+                        Globals.showPlaylistDialog(itemView.getContext(), song);
+                    }
+                    else if (itemId == R.id.pop_up_details) {
                         showDetails();
                     }
                     return true;
@@ -107,21 +114,13 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
         private void showDetails() {
         }
 
-        private void addToPlayList(MusicFile song) {
-            Globals.showPlaylistDialog(itemView.getContext(), song);
-        }
 
-        private void share() {
-        }
-
-        private void delete() {
-
-        }
     }
 
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
         utilInterfaces = (UtilInterfaces.ViewChanger) recyclerView.getContext();
+        songPopUpMenu = (UtilInterfaces.songPopUpMenu) recyclerView.getContext();
     }
 }

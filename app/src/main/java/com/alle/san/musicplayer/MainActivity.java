@@ -1,12 +1,16 @@
 package com.alle.san.musicplayer;
 
 import android.Manifest;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,7 +20,6 @@ import android.widget.CheckBox;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SearchView;
-import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -44,22 +47,31 @@ import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import static com.alle.san.musicplayer.util.Globals.ABOUT_DEVELOPER_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.ALBUMS_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.ALBUM_SONG_LIST_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.ARTISTS_FRAGMENT_TAG;
+import static com.alle.san.musicplayer.util.Globals.FACEBOOK_URL;
 import static com.alle.san.musicplayer.util.Globals.FAVORITES;
 import static com.alle.san.musicplayer.util.Globals.FOLDERS_FRAGMENT_TAG;
+import static com.alle.san.musicplayer.util.Globals.INSTAGRAM_URL;
+import static com.alle.san.musicplayer.util.Globals.LINKED_IN_URL;
 import static com.alle.san.musicplayer.util.Globals.MINIMIZED_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.PLAYLIST_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.POSITION_KEY;
 import static com.alle.san.musicplayer.util.Globals.SONG_LIST_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.STRING_EXTRA;
+import static com.alle.san.musicplayer.util.Globals.WHATSAPP_URL;
+import static com.alle.san.musicplayer.util.Globals.getSongUri;
 
-public class MainActivity extends AppCompatActivity implements UtilInterfaces.ViewChanger, UtilInterfaces.MusicServiceCallbacks {
+public class MainActivity extends AppCompatActivity implements UtilInterfaces.ViewChanger, UtilInterfaces.MusicServiceCallbacks,
+UtilInterfaces.ContactThrough, UtilInterfaces.songPopUpMenu {
 
     private static final int STORAGE_REQUEST = 2;
+    private static final int WRITE_REQUEST = 3;
+    private static final int REQUEST_PERM_DELETE = 1;
     int fragmentContainer;
     ActionBar actionBar;
     FragmentManager fm;
@@ -96,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
         toggle.syncState();
         initNavigationView();
 
-        if (checkPermissions()) initViewPaging();
+        if (checkReadPermissions()) initViewPaging();
         if (albumsFragment == null) albumsFragment = new AlbumsFragment();
     }
     
@@ -218,13 +230,24 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
         actionBar.setTitle(tag);
     }
 
-    private boolean checkPermissions() {
+    private boolean checkReadPermissions() {
         boolean readStorage = false;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_REQUEST);
             } else readStorage = true;
 
+
+        }
+        return readStorage;
+    }
+
+    private boolean checkWritePermissions() {
+        boolean readStorage = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_REQUEST);
+            } else readStorage = true;
 
         }
         return readStorage;
@@ -421,5 +444,72 @@ public class MainActivity extends AppCompatActivity implements UtilInterfaces.Vi
         Intent serviceIntent = new Intent(this, MusicService.class);
         serviceIntent.putExtra(POSITION_KEY, StorageUtil.getPosition(this));
         startService(serviceIntent);
+    }
+
+    public void shareMusicFile(String id){
+        Uri uri = Globals.getSongUri(Integer.parseInt(id));
+        Intent share = new Intent(Intent.ACTION_SEND);
+        share.setType("audio/*");
+        share.putExtra(Intent.EXTRA_STREAM, uri);
+        startActivity(Intent.createChooser(share, "Share Sound File"));
+    }
+
+    @Override
+    public void deleteMusicFile(String id) {
+        try {
+            if (checkWritePermissions()) getContentResolver().delete(getSongUri(Integer.parseInt(id)), null, null);
+        } catch (SecurityException e){
+            requestDeletePermission(List.of(getSongUri(Integer.parseInt(id))));
+        }
+    }
+
+    private void requestDeletePermission(List<Uri> uriList){
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            PendingIntent pi = MediaStore.createDeleteRequest(getContentResolver(), uriList);
+
+            try {
+                startIntentSenderForResult(pi.getIntentSender(), REQUEST_PERM_DELETE, null, 0, 0,
+                        0);
+            } catch (IntentSender.SendIntentException ignored) { }
+        }
+    }
+
+    @Override
+    public void whatsApp() {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(WHATSAPP_URL));
+        startActivity(intent);
+    }
+
+    @Override
+    public void facebook() {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(FACEBOOK_URL));
+        startActivity(intent);
+    }
+
+    @Override
+    public void instagram() {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(INSTAGRAM_URL));
+        startActivity(intent);
+    }
+
+    @Override
+    public void gmail() {
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:"));
+        intent.putExtra(Intent.EXTRA_EMAIL, "shinshray@gmail.com");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Request to collaborate");
+        intent.putExtra(Intent.EXTRA_TEXT, "Hey Sharif, I been using your music player app and i think its amazing, i would like to collaborate" +
+                "with you on a project if you dont mind.");
+        startActivity(Intent.createChooser(intent, "Send Email"));
+    }
+
+    @Override
+    public void linkedIn() {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(LINKED_IN_URL));
+        startActivity(intent);
     }
 }

@@ -197,7 +197,6 @@
             android:id="@+id/previous_button"
             android:layout_width="54dp"
             android:layout_height="54dp"
-            android:layout_gravity="center"
             android:clickable="true"
             android:focusable="true"
             android:padding="15dp"

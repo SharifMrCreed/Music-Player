@@ -46,7 +46,7 @@
             android:layout_alignParentBottom="true">
 
             <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/shuffle_button"
+                android:id="@+id/linkedIn_button"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="center"
@@ -56,12 +56,12 @@
                 android:focusable="true"
                 android:src="@drawable/ic_linkedin"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/previous_button"
+                app:layout_constraintEnd_toStartOf="@+id/gmail_button"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/previous_button"
+                android:id="@+id/gmail_button"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="center"
@@ -70,12 +70,12 @@
                 android:focusable="true"
                 android:src="@drawable/ic_gmail"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/pause_button"
-                app:layout_constraintStart_toEndOf="@+id/shuffle_button"
+                app:layout_constraintEnd_toStartOf="@+id/facebook_button"
+                app:layout_constraintStart_toEndOf="@+id/linkedIn_button"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/pause_button"
+                android:id="@+id/facebook_button"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_centerInParent="true"
@@ -83,13 +83,13 @@
                 android:focusable="true"
                 android:src="@drawable/ic_facebook"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/next_button"
-                app:layout_constraintStart_toEndOf="@+id/previous_button"
+                app:layout_constraintEnd_toStartOf="@+id/whatsApp_button"
+                app:layout_constraintStart_toEndOf="@+id/gmail_button"
                 app:layout_constraintTop_toTopOf="parent" />
 
 
             <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/next_button"
+                android:id="@+id/whatsApp_button"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="center"
@@ -100,13 +100,13 @@
                 android:focusable="true"
                 android:src="@drawable/ic_whatsapp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/repeat_button"
-                app:layout_constraintStart_toEndOf="@+id/pause_button"
+                app:layout_constraintEnd_toStartOf="@id/instagram_button"
+                app:layout_constraintStart_toEndOf="@+id/facebook_button"
                 app:layout_constraintTop_toTopOf="parent"/>
 
 
             <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/repeat_button"
+                android:id="@+id/instagram_button"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="center"
@@ -117,7 +117,7 @@
                 android:src="@drawable/ic_instagram"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/next_button"
+                app:layout_constraintStart_toEndOf="@+id/whatsApp_button"
                 app:layout_constraintTop_toTopOf="parent"/>
 
 

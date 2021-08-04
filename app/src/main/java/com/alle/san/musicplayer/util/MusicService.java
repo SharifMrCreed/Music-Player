@@ -228,7 +228,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
     }
 
     public void createMediaPlayer(int songPosition) {
-        Uri uri = getSongUri(Integer.parseInt(songs.get(songPosition).get_id()));
+        Uri uri = Globals.getSongUri(Integer.parseInt(songs.get(songPosition).get_id()));
         StorageUtil.setCurrentSong(songs.get(songPosition), getApplication());
         if (mediaPlayer != null) {
             mediaPlayer.stop();
@@ -257,9 +257,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
 
     }
 
-    public static Uri getSongUri(int songId) {
-        return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, songId);
-    }
+
 
     private void initMediaSession() {
         mediaSession = new MediaSessionCompat(getApplicationContext(), TAG);

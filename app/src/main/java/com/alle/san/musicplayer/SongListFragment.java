@@ -43,7 +43,6 @@ public class SongListFragment extends Fragment implements UtilInterfaces.Filter 
     private void displaySongNames() {
         recyclerView.setAdapter(songRecyclerAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
-
     }
 
     @Override
