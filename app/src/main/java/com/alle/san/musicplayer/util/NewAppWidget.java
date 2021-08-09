@@ -6,12 +6,20 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
 import com.alle.san.musicplayer.PlaySongActivity;
 import com.alle.san.musicplayer.R;
 import com.alle.san.musicplayer.models.MusicFile;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 import static com.alle.san.musicplayer.util.Globals.ACTION_NEXT;
 import static com.alle.san.musicplayer.util.Globals.ACTION_PAUSE;
@@ -39,6 +47,9 @@ public class NewAppWidget extends AppWidgetProvider{
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.new_app_widget);
         remoteViews.setOnClickPendingIntent(R.id.widget_parent, pendingIntent);
         if (musicFile != null) {
+            Bitmap bitmap = Globals.albumBitmap(context, musicFile.getData());
+
+            remoteViews.setImageViewBitmap(R.id.album_art, Globals.getResizedBitmap(bitmap, 500));
             remoteViews.setOnClickPendingIntent(R.id.previous_button, playbackAction(3, context));
             remoteViews.setOnClickPendingIntent(R.id.shuffle_button, playbackAction(4, context));
             remoteViews.setOnClickPendingIntent(R.id.repeat_button, playbackAction(5, context));
@@ -62,7 +73,13 @@ public class NewAppWidget extends AppWidgetProvider{
 
     @Override
     public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager, int appWidgetId, Bundle newOptions) {
-        onUpdate(context, appWidgetManager, new int[]{appWidgetId});
+        int minWidth = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
+        int maxWidth = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH);
+        int maxHeight = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
+        int minHeight = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
+        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.new_app_widget);
+        remoteViews.setViewVisibility(R.id.album_art, maxWidth > 300 ? View.VISIBLE : View.GONE);
+        appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
     }
 
     @Override
@@ -75,6 +92,7 @@ public class NewAppWidget extends AppWidgetProvider{
 
         }
     }
+
 
     private static PendingIntent playbackAction(int actionNumber, Context context) {
         Intent playbackAction = new Intent(context, MusicService.class);

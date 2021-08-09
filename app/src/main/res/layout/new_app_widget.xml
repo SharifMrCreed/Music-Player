@@ -4,117 +4,131 @@
     android:layout_height="wrap_content"
     android:id="@+id/widget_parent"
     android:background="?attr/appWidgetBackgroundColor"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:padding="@dimen/widget_margin"
     android:theme="@style/ThemeOverlay.MusicPlayer.AppWidgetContainer">
 
-    <TextView
-        android:id="@+id/song_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="@string/song_name"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:maxLines="1"
-        android:textColor="@color/white_t80" />
 
-    <TextView
-        android:id="@+id/artist_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="@string/artist"
-        android:maxLines="1"
-        android:textColor="@color/grey_500" />
+    <ImageView
+        android:id="@+id/album_art"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginEnd="8dp"
+        android:layout_gravity="center_vertical"
+        android:scaleType="centerCrop"
+        android:visibility="gone"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:weightSum="7">
+        android:orientation="vertical">
+
         <TextView
+            android:id="@+id/song_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/app_name"
-            android:textStyle="italic"
-            android:textColor="@color/white_t30"
-            android:layout_gravity="bottom"
-            android:fontFamily="@font/pacifico"/>
+            android:layout_marginStart="8dp"
+            android:maxLines="1"
+            android:text="@string/song_name"
+            android:textColor="@color/white_t80"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
-        <ImageView
-            android:id="@+id/shuffle_button"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_gravity="center"
-            android:layout_margin="8dp"
-            android:layout_weight="1"
-            android:clickable="true"
-            android:elevation="40dp"
-            android:focusable="true"
-            android:padding="5dp"
-            android:src="@drawable/shuffle_icon"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
+        <TextView
+            android:id="@+id/artist_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:maxLines="1"
+            android:text="@string/artist"
+            android:textColor="@color/grey_500" />
 
-        <ImageView
-            android:id="@+id/previous_button"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_margin="8dp"
-            android:layout_weight="1"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="3dp"
-            android:src="@drawable/rewind_icon"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="7">
 
-        <RelativeLayout
-            android:id="@+id/pause_button_layout"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:layout_gravity="center"
-            android:layout_margin="8dp"
-            android:layout_weight="1"
-            android:background="@drawable/shape_circle">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:fontFamily="@font/pacifico"
+                android:text="@string/app_name"
+                android:textColor="@color/white_t30"
+                android:textStyle="italic"/>
 
             <ImageView
-                android:id="@+id/widget_pause_button"
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:layout_centerInParent="true"
+                android:id="@+id/shuffle_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:elevation="40dp"
+                android:focusable="true"
+                android:padding="5dp"
+                android:src="@drawable/shuffle_icon"/>
+
+            <ImageView
+                android:id="@+id/previous_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
                 android:clickable="true"
                 android:focusable="true"
-                android:src="@drawable/play_icon" />
+                android:padding="3dp"
+                android:src="@drawable/rewind_icon"/>
 
-        </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/pause_button_layout"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/shape_circle"
+                android:clickable="true"
+                android:focusable="true">
 
-        <ImageView
-            android:id="@+id/next_button"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_gravity="center"
-            android:layout_margin="8dp"
-            android:layout_weight="1"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="3dp"
-            android:src="@drawable/next_icon"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
+                <ImageView
+                    android:id="@+id/widget_pause_button"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:layout_centerInParent="true"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:src="@drawable/play_icon" />
 
-        <ImageView
-            android:id="@+id/repeat_button"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_gravity="center"
-            android:layout_margin="8dp"
-            android:layout_weight="1"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="5dp"
-            android:src="@drawable/repeat_icon"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
+            </RelativeLayout>
+
+            <ImageView
+                android:id="@+id/next_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="3dp"
+                android:src="@drawable/next_icon"/>
+
+            <ImageView
+                android:id="@+id/repeat_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="5dp"
+                android:src="@drawable/repeat_icon"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 
