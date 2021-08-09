@@ -53,6 +53,7 @@ import static com.alle.san.musicplayer.util.Globals.ABOUT_DEVELOPER_FRAGMENT_TAG
 import static com.alle.san.musicplayer.util.Globals.ALBUMS_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.ALBUM_SONG_LIST_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.ARTISTS_FRAGMENT_TAG;
+import static com.alle.san.musicplayer.util.Globals.CURRENT_SONG;
 import static com.alle.san.musicplayer.util.Globals.FACEBOOK_URL;
 import static com.alle.san.musicplayer.util.Globals.FAVORITES;
 import static com.alle.san.musicplayer.util.Globals.FOLDERS_FRAGMENT_TAG;
@@ -77,8 +78,6 @@ UtilInterfaces.ContactThrough, UtilInterfaces.songPopUpMenu {
     FragmentManager fm;
 
     SongListFragment songListFragment;
-    AlbumsFragment albumsFragment;
-    FoldersFragment foldersFragment;
     AlbumSongListFragment albumSongListFragment;
 
     CardView miniPlayerCard;
@@ -109,7 +108,6 @@ UtilInterfaces.ContactThrough, UtilInterfaces.songPopUpMenu {
         initNavigationView();
 
         if (checkReadPermissions()) initViewPaging();
-        if (albumsFragment == null) albumsFragment = new AlbumsFragment();
     }
     
     private void initViewPaging() {
@@ -221,9 +219,7 @@ UtilInterfaces.ContactThrough, UtilInterfaces.songPopUpMenu {
     }
 
     private void initFragment(Fragment fragment, String tag) {
-        Bundle args = new Bundle();
-        args.putString(ALBUMS_FRAGMENT_TAG, tag);
-        FragmentTransaction transaction = fm.beginTransaction();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(fragmentContainer, fragment, tag);
         transaction.addToBackStack(tag);
         transaction.commit();
@@ -284,9 +280,12 @@ UtilInterfaces.ContactThrough, UtilInterfaces.songPopUpMenu {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == STORAGE_REQUEST && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+        if (requestCode == STORAGE_REQUEST && grantResults[0] == PackageManager.PERMISSION_GRANTED){
             StorageUtil.createPlaylist(FAVORITES, this);
             initViewPaging();
+        }else if (requestCode == REQUEST_PERM_DELETE && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+            startMusicService();
+        }
     }
 
     @Override
@@ -365,18 +364,31 @@ UtilInterfaces.ContactThrough, UtilInterfaces.songPopUpMenu {
                 case (R.id.nav_all_songs):
                     initFragment(songListFragment, SONG_LIST_FRAGMENT_TAG);
                     break;
+                case (R.id.nav_current_songs):
+                    songListFragment = new SongListFragment();
+                    Bundle args = new Bundle();
+                    args.putString(CURRENT_SONG, CURRENT_SONG);
+                    songListFragment.setArguments(args);
+                    FragmentTransaction transaction = fm.beginTransaction();
+                    transaction.replace(fragmentContainer, songListFragment, SONG_LIST_FRAGMENT_TAG);
+                    transaction.addToBackStack(SONG_LIST_FRAGMENT_TAG);
+                    transaction.commit();
+                    actionBar.setTitle(getString(R.string.currently_playing));
+                    break;
                 case (R.id.nav_albums):
-                    initFragment(albumsFragment, ALBUMS_FRAGMENT_TAG);
+                    getAlbums(StorageUtil.getSongsFromStorage(this, StorageUtil.getSortOrder(this), Globals.getOrder(this) ));
+                    initFragment(new AlbumsFragment(), ALBUMS_FRAGMENT_TAG);
                     break;
                 case (R.id.nav_artists):
+                    getArtists(StorageUtil.getSongsFromStorage(this, StorageUtil.getSortOrder(this), Globals.getOrder(this) ));
                     initFragment(new ArtistsFragment(), ARTISTS_FRAGMENT_TAG);
                     break;
                 case (R.id.nav_playlists):
                     initFragment(new PlayListFragment(), PLAYLIST_FRAGMENT_TAG);
                     break;
                 case (R.id.nav_folders):
-                    if (foldersFragment == null) foldersFragment = new FoldersFragment();
-                    initFragment(foldersFragment, FOLDERS_FRAGMENT_TAG);
+                    getFolders();
+                    initFragment(new FoldersFragment(), FOLDERS_FRAGMENT_TAG);
                     break;
                 case (R.id.nav_about):
                     initFragment(new AboutDeveloperFragment(), ABOUT_DEVELOPER_FRAGMENT_TAG);
@@ -457,16 +469,19 @@ UtilInterfaces.ContactThrough, UtilInterfaces.songPopUpMenu {
     @Override
     public void deleteMusicFile(String id) {
         try {
-            if (checkWritePermissions()) getContentResolver().delete(getSongUri(Integer.parseInt(id)), null, null);
+            if (checkWritePermissions()){
+                getContentResolver().delete(getSongUri(Integer.parseInt(id)), null, null);
+                startMusicService();
+            }
         } catch (SecurityException e){
             requestDeletePermission(List.of(getSongUri(Integer.parseInt(id))));
+            startMusicService();
         }
     }
 
     private void requestDeletePermission(List<Uri> uriList){
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
             PendingIntent pi = MediaStore.createDeleteRequest(getContentResolver(), uriList);
-
             try {
                 startIntentSenderForResult(pi.getIntentSender(), REQUEST_PERM_DELETE, null, 0, 0,
                         0);

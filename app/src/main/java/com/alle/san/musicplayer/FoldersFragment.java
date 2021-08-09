@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,17 +29,23 @@ public class  FoldersFragment extends Fragment implements SharedPreferences.OnSh
     private ArtistRvAdapter artistRvAdapter;
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        allFolders = StorageUtil.getFolders(getContext());
+        preferences = getContext().getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
+
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_folders, container, false);
         rvArtistList = view.findViewById(R.id.rv_album_fragment);
         LinearLayout nothingLayout = view.findViewById(R.id.nothing_layout);
-        allFolders = StorageUtil.getFolders(getContext());
         if (allFolders == null) allFolders = new ArrayList<>();
         if (allFolders.isEmpty()) nothingLayout.setVisibility(View.VISIBLE);
 
-        preferences = getContext().getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
         initFoldersRecyclerView();
         return view;
     }

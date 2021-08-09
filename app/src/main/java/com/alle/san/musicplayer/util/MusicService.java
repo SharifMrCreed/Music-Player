@@ -1,9 +1,10 @@
 package com.alle.san.musicplayer.util;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -15,7 +16,6 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.provider.MediaStore;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
@@ -43,6 +43,8 @@ import static com.alle.san.musicplayer.util.Globals.ACTION_NEXT;
 import static com.alle.san.musicplayer.util.Globals.ACTION_PAUSE;
 import static com.alle.san.musicplayer.util.Globals.ACTION_PLAY;
 import static com.alle.san.musicplayer.util.Globals.ACTION_PREVIOUS;
+import static com.alle.san.musicplayer.util.Globals.ACTION_REPEAT;
+import static com.alle.san.musicplayer.util.Globals.ACTION_SHUFFLE;
 import static com.alle.san.musicplayer.util.Globals.ACTION_STOP;
 import static com.alle.san.musicplayer.util.Globals.MUSIC_CHANNEL;
 import static com.alle.san.musicplayer.util.Globals.NOTIFICATION_ID;
@@ -67,6 +69,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
     IBinder binder = new MusicBinder();
     int position;
     MusicFile previousSong = new MusicFile();
+
 
 
     @Nullable
@@ -100,6 +103,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         position = intent.getIntExtra(POSITION_KEY, StorageUtil.getPosition(getApplicationContext()));
+
         //Could not gain focus
         if (!requestAudioFocus()) stopSelf();
         else checkAndPlay();
@@ -210,6 +214,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         int size = songs.size();
         if (size > 1) position = random.nextInt((size - 1));
         else position = 0;
+        notifyRemoteViews();
         StorageUtil.setPosition(position, getApplicationContext());
 
     }
@@ -256,8 +261,6 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         mediaPlayer.setOnCompletionListener(this);
 
     }
-
-
 
     private void initMediaSession() {
         mediaSession = new MediaSessionCompat(getApplicationContext(), TAG);
@@ -343,6 +346,15 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
                 .putString(MediaMetadataCompat.METADATA_KEY_TITLE, songs.get(position).getTitle())
                 .build());
     }
+    public void notifyRemoteViews(){
+        for (int appWidgetId: StorageUtil.getWidgetIds(getApplicationContext())){
+            NewAppWidget.updateAppWidget(
+                    getApplicationContext(),
+                    AppWidgetManager.getInstance(getApplicationContext()),
+                    appWidgetId);
+
+        }
+    }
 
     public void buildNotification(PlaybackStatus playbackStatus) {
         this.playbackStatus = playbackStatus;
@@ -356,14 +368,18 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         //Build a new notification according to the current state of the MediaPlayer
         if (playbackStatus == PlaybackStatus.PLAYING) {
             play_pauseAction = playbackAction(1);
+            StorageUtil.setIsPlaying(getApplicationContext(), true);
         } else if (playbackStatus == PlaybackStatus.PAUSED) {
             notificationAction = R.drawable.play_icon;
             play_pauseAction = playbackAction(0);
+            StorageUtil.setIsPlaying(getApplicationContext(), false);
         }
-
+        if (StorageUtil.getWidgetIds(getApplicationContext()) != null) {
+            StorageUtil.setCurrentSong(songs.get(position), getApplicationContext());
+            notifyRemoteViews();
+        }
         // Create a new Notification
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, MUSIC_CHANNEL)
-                .setShowWhen(false)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setMediaSession(mediaSession.getSessionToken())
                         .setShowActionsInCompactView(0, 1, 2))
@@ -374,6 +390,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
                 .setContentIntent(mediaSession.getController().getSessionActivity())
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setContentIntent(contentIntent)
+                .setPriority(Notification.PRIORITY_MAX)
                 .setContentText(songs.get(StorageUtil.getPosition(getApplicationContext())).getArtist())
                 .setContentTitle(songs.get(StorageUtil.getPosition(getApplicationContext())).getAlbum())
                 .setContentInfo(songs.get(StorageUtil.getPosition(getApplicationContext())).getTitle())
@@ -422,6 +439,13 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         else if (actionString.equalsIgnoreCase(ACTION_NEXT)) transportControls.skipToNext();
         else if (actionString.equalsIgnoreCase(ACTION_PREVIOUS)) transportControls.skipToPrevious();
         else if (actionString.equalsIgnoreCase(ACTION_STOP)) transportControls.stop();
+        else if (actionString.equalsIgnoreCase(ACTION_SHUFFLE)) {
+            StorageUtil.setShuffle(getApplicationContext());
+            notifyRemoteViews();
+        } else if (actionString.equalsIgnoreCase(ACTION_REPEAT)) {
+            StorageUtil.setRepeat(getApplicationContext());
+            notifyRemoteViews();
+        }
     }
 
     public class MusicBinder extends Binder {
@@ -547,7 +571,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         if (phoneStateListener != null) {
             telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
         }
-
+        StorageUtil.setIsPlaying(getApplicationContext(), false);
         removeNotification();
         StorageUtil.clearCachedAudioPlaylist(getApplicationContext());
         //unregister BroadcastReceivers

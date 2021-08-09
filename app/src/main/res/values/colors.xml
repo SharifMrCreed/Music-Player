@@ -14,10 +14,15 @@
     <color name="black_t50">#80000000</color>
     <color name="black_t80">#CC000000</color>
     <color name="black_t30">#4D000000</color>
+    <color name="black_t10">#1A000000</color>
     <color name="grey_200">#C4C6C6</color>
     <color name="grey_500">#72C4C6C6</color>
     <color name="grey_700">#292929</color>
     <color name="grey_900">#1E1E1E</color>
     <color name="grey_1000">#131313</color>
     <color name="sky_blue">#0C93FF</color>
+    <color name="light_blue_50">#FFE1F5FE</color>
+    <color name="light_blue_200">#FF81D4FA</color>
+    <color name="light_blue_600">#FF039BE5</color>
+    <color name="light_blue_900">#FF01579B</color>
 </resources>

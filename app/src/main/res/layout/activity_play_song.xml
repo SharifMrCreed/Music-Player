@@ -194,6 +194,23 @@
         </RelativeLayout>
 
         <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/shuffle_button"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_gravity="center"
+            android:clickable="true"
+            android:elevation="40dp"
+            android:focusable="true"
+            android:padding="17dp"
+            android:src="@drawable/shuffle_icon"
+            app:layout_constraintBottom_toBottomOf="@+id/previous_button"
+            app:layout_constraintEnd_toStartOf="@+id/previous_button"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/previous_button"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
+
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/previous_button"
             android:layout_width="54dp"
             android:layout_height="54dp"
@@ -270,22 +287,6 @@
             app:layout_constraintTop_toTopOf="@+id/next_button"
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/shuffle_button"
-            android:layout_width="54dp"
-            android:layout_height="54dp"
-            android:layout_gravity="center"
-            android:clickable="true"
-            android:elevation="40dp"
-            android:focusable="true"
-            android:padding="17dp"
-            android:src="@drawable/shuffle_icon"
-            app:layout_constraintBottom_toBottomOf="@+id/previous_button"
-            app:layout_constraintEnd_toStartOf="@+id/previous_button"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/previous_button"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.LowerRoundCorners" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

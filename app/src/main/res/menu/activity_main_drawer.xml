@@ -6,6 +6,10 @@
     <group
         android:checkableBehavior="single">
         <item
+            android:id="@+id/nav_current_songs"
+            android:icon="@drawable/play_icon"
+            android:title="@string/currently_playing" />
+        <item
             android:id="@+id/nav_all_songs"
             android:icon="@drawable/ic_music_note"
             android:title="@string/all_songs" />

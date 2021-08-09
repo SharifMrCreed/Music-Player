@@ -51,6 +51,8 @@ public class Globals {
     public static final String PLAYLIST_KEY = "playlist";
     public static final String RESUME_KEY = "resume";
     public static final String SORT_ORDER = "SortOrder";
+    public static final String IS_PLAYING = "isPlaying";
+    public static final String WIDGET_ID = "widgetId";
     public static final String ORDER = "Order";
     public static final String SONGS_KEY = "Songs";
     public static final String CURRENT_SONG = "current song";
@@ -70,6 +72,8 @@ public class Globals {
     public static final String ACTION_PAUSE = "com.alle.san.musicplayer.ACTION_PAUSE";
     public static final String ACTION_PREVIOUS = "com.alle.san.musicplayer.ACTION_PREVIOUS";
     public static final String ACTION_NEXT = "com.alle.san.musicplayer.ACTION_NEXT";
+    public static final String ACTION_SHUFFLE = "com.alle.san.musicplayer.ACTION_SHUFFLE";
+    public static final String ACTION_REPEAT = "com.alle.san.musicplayer.ACTION_REPEAT";
     public static final String ACTION_STOP = "com.alle.san.musicplayer.ACTION_STOP";
 
     //Methods

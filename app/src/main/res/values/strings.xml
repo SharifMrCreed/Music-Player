@@ -43,4 +43,8 @@
     <string name="title">Title</string>
     <string name="recently_added">Recently Added</string>
     <string name="reverse_order">Reverse order</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="configure">Configure</string>
+    <string name="add_widget">Add widget</string>
+    <string name="currently_playing">Currently Playing</string>
 </resources>

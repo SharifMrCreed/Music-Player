@@ -23,6 +23,7 @@ import static com.alle.san.musicplayer.util.Globals.AUDIO_PLAYER_PLAYLISTS;
 import static com.alle.san.musicplayer.util.Globals.AUDIO_PLAYER_STORAGE;
 import static com.alle.san.musicplayer.util.Globals.CURRENT_SONG;
 import static com.alle.san.musicplayer.util.Globals.FOLDERS_FRAGMENT_TAG;
+import static com.alle.san.musicplayer.util.Globals.IS_PLAYING;
 import static com.alle.san.musicplayer.util.Globals.ORDER;
 import static com.alle.san.musicplayer.util.Globals.PLAYLIST_KEY;
 import static com.alle.san.musicplayer.util.Globals.POSITION_KEY;
@@ -30,6 +31,7 @@ import static com.alle.san.musicplayer.util.Globals.REPEAT_KEY;
 import static com.alle.san.musicplayer.util.Globals.SHUFFLE_KEY;
 import static com.alle.san.musicplayer.util.Globals.SONGS_KEY;
 import static com.alle.san.musicplayer.util.Globals.SORT_ORDER;
+import static com.alle.san.musicplayer.util.Globals.WIDGET_ID;
 
 public class StorageUtil {
     private static SharedPreferences preferences;
@@ -51,6 +53,46 @@ public class StorageUtil {
                     songsList.addAll(getSongFolders(file1));
                 }
             }
+        }
+        return songsList;
+    }
+
+    public static HashSet<String> getMusicFolders(Context context){
+        HashSet<String> songsList = new HashSet<>();
+        Uri uri;
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) uri = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL);
+        else uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        String[] projection = new String[]{
+                MediaStore.Audio.Media._ID,
+                MediaStore.Audio.Media.TITLE,
+                MediaStore.Audio.Media.ALBUM,
+                MediaStore.Audio.Media.DURATION,
+                MediaStore.Audio.Media.ARTIST,
+                MediaStore.Audio.Media.DATA,
+                MediaStore.Audio.Media.DATE_ADDED
+        };
+        Cursor cursor = context.getContentResolver()
+                .query(uri, projection, null, null, null);
+        if(cursor != null){
+            while (cursor.moveToNext()){
+                String songName = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+                String songID = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
+                String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
+                String duration = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
+                String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+                String data = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                String dateAdded = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATE_ADDED));
+
+                String title = delimitTitle(songName) ;
+                int length;
+                if (duration == null) length = 0; else length = Integer.parseInt(duration);
+                if (length>45000){
+                    MusicFile musicFile = new MusicFile(songID, title, album, data, artist, length, dateAdded);
+                    //musicFiles.add(musicFile);
+                }
+
+            }
+            cursor.close();
         }
         return songsList;
     }
@@ -173,7 +215,7 @@ public class StorageUtil {
         return  newTitle;
     }
 
-    public static void storeAudio(ArrayList<MusicFile> arrayList, Context context ) {
+    public static void setPlayingSongs(ArrayList<MusicFile> arrayList, Context context ) {
         preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         Gson gson = new Gson();
@@ -314,6 +356,17 @@ public class StorageUtil {
         return preferences.getInt(POSITION_KEY, -1);//return -1 if no data found
     }
 
+    public static void setIsPlaying(Context context, boolean isPlaying) {
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean(IS_PLAYING, isPlaying);
+        editor.apply();
+    }
+
+    public static boolean isPlaying(Context context) {
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
+        return preferences.getBoolean(IS_PLAYING, false);//return -1 if no data found
+    }
 
     public static void addToPlaylist(String playlistName, MusicFile song, Context context ) {
         ArrayList<MusicFile> arrayList = getPlaylistSongs(context, playlistName);
@@ -327,6 +380,27 @@ public class StorageUtil {
         editor.apply();
     }
 
+    public static void addWidgetId(int id, Context context ) {
+        ArrayList<Integer> arrayList = getWidgetIds(context);
+        if (arrayList == null) arrayList = new ArrayList<>();
+        arrayList.add(id);
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_PLAYLISTS, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(arrayList);
+        editor.putString(WIDGET_ID, json);
+        editor.apply();
+    }
+    public static void deleteAllWidgetIds( Context context ) {
+        ArrayList<Integer> arrayList = getWidgetIds(context);
+        if (arrayList == null) return;
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_PLAYLISTS, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(null);
+        editor.putString(WIDGET_ID, json);
+        editor.apply();
+    }
 
     public static void createPlaylist(String playlistName, Context context ) {
         ArrayList<String> arrayList = getPlaylists(context);
@@ -346,6 +420,7 @@ public class StorageUtil {
         editor.putString(SORT_ORDER, sortBy);
         editor.apply();
     }
+
     public static String getSortOrder(Context context ) {
         preferences = context.getSharedPreferences(AUDIO_PLAYER_PLAYLISTS, Context.MODE_PRIVATE);
         return preferences.getString(SORT_ORDER, Globals.TITLE);
@@ -360,12 +435,20 @@ public class StorageUtil {
         return gson.fromJson(json, type);
     }
 
-
     public static ArrayList<MusicFile> getPlaylistSongs(Context context, String playlistName) {
         preferences = context.getSharedPreferences(AUDIO_PLAYER_PLAYLISTS, Context.MODE_PRIVATE);
         Gson gson = new Gson();
         String json = preferences.getString(playlistName, null);
         Type type = new TypeToken<ArrayList<MusicFile>>() {
+        }.getType();
+        return gson.fromJson(json, type);
+    }
+
+    public static ArrayList<Integer> getWidgetIds(Context context) {
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_PLAYLISTS, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = preferences.getString(WIDGET_ID, null);
+        Type type = new TypeToken<ArrayList<Integer>>() {
         }.getType();
         return gson.fromJson(json, type);
     }

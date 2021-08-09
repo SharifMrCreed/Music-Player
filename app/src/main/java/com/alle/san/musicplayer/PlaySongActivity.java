@@ -31,6 +31,7 @@ import java.util.ArrayList;
 
 import static com.alle.san.musicplayer.util.Globals.POSITION_KEY;
 import static com.alle.san.musicplayer.util.Globals.SONGS_KEY;
+import static com.alle.san.musicplayer.util.Globals.WIDGET_ID;
 
 public class PlaySongActivity extends AppCompatActivity implements UtilInterfaces.Buttons, ServiceConnection {
 
@@ -71,7 +72,7 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
 
         //initialize Variables
         songs = getIntent().getParcelableArrayListExtra(SONGS_KEY);
-        StorageUtil.storeAudio(songs, getApplicationContext());
+        StorageUtil.setPlayingSongs(songs, getApplicationContext());
         StorageUtil.setPosition(getIntent().getIntExtra(POSITION_KEY, 0), this);
         song = songs.get(getIntent().getIntExtra(POSITION_KEY, 0));
         albumArt = Globals.albumBitmap(this, song.getData());
@@ -107,6 +108,7 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
 
         shuffleButton.setOnClickListener(view -> {
             StorageUtil.setShuffle(this);
+            if (musicService != null) musicService.notifyRemoteViews();
 
             if (StorageUtil.isShuffle(this)) Glide.with(this).load(
                     R.drawable.shuffle_icon_on)
@@ -117,6 +119,7 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
 
         repeatButton.setOnClickListener(view -> {
             StorageUtil.setRepeat(this);
+            if (musicService != null) musicService.notifyRemoteViews();
             if (StorageUtil.isRepeat(this)) Glide.with(this).load(
                     R.drawable.repeat_icon_on)
                     .into(repeatButton);
@@ -244,6 +247,14 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
     public void onServiceDisconnected(ComponentName name) {
         musicService = null;
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (getIntent().getStringExtra(WIDGET_ID) != null){
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+        } else super.onBackPressed();
     }
 
     @Override

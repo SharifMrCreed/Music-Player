@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -22,12 +23,17 @@ public class AlbumsFragment extends Fragment {
     private ArrayList<MusicFile> allAlbums;
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        allAlbums = StorageUtil.getAlbums(getContext());
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_albums, container, false);
         rvAlbumList = view.findViewById(R.id.rv_album_fragment);
         LinearLayout nothingLayout = view.findViewById(R.id.nothing_layout);
-        allAlbums = StorageUtil.getAlbums(getContext());
         if (allAlbums == null) allAlbums = new ArrayList<>();
         if (allAlbums.isEmpty()) nothingLayout.setVisibility(View.VISIBLE);
 

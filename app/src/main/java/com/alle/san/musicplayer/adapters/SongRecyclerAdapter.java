@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.alle.san.musicplayer.R;
 import com.alle.san.musicplayer.models.MusicFile;
 import com.alle.san.musicplayer.util.Globals;
+import com.alle.san.musicplayer.util.StorageUtil;
 import com.alle.san.musicplayer.util.UtilInterfaces;
 import com.bumptech.glide.Glide;
 
@@ -92,6 +93,7 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
                     if (itemId == R.id.pop_up_delete) {
                         songPopUpMenu.deleteMusicFile(song.get_id());
                         songs.remove(position);
+                        StorageUtil.setPlayingSongs(songs, itemView.getContext());
                         notifyItemRemoved(position);
                     }
                     else if (itemId == R.id.pop_up_share) {

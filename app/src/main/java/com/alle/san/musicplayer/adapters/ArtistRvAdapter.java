@@ -40,6 +40,7 @@ public class ArtistRvAdapter extends RecyclerView.Adapter<ArtistRvAdapter.Artist
     }
 
     public void setArtists(ArrayList<ArtistModel> artists) {
+        if (artists == null) artists = new ArrayList<>();
         this.artists = artists;
         notifyDataSetChanged();
     }
