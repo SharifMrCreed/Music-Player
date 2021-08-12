@@ -106,16 +106,12 @@ public class SongRecyclerAdapter extends RecyclerView.Adapter<SongRecyclerAdapte
                         Globals.showPlaylistDialog(itemView.getContext(), song);
                     }
                     else if (itemId == R.id.pop_up_details) {
-                        showDetails();
+                        Globals.showDetailsDialog(itemView.getContext(), song);
                     }
                     return true;
                 });
             });
         }
-
-        private void showDetails() {
-        }
-
 
     }
 

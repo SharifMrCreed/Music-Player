@@ -1,15 +1,10 @@
 package com.alle.san.musicplayer.models;
 
-import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class ArtistModel implements Parcelable {
+public class ArtistModel extends MyModels implements Parcelable {
     String name;
-    String pic1;
-    String pic2;
-    String pic3;
-    String pic4;
 
     public ArtistModel(String name, String pic1, String pic2, String pic3, String pic4){
         this.name = name;

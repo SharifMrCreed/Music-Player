@@ -8,6 +8,7 @@ import android.os.Build;
 import android.provider.MediaStore;
 
 import com.alle.san.musicplayer.models.ArtistModel;
+import com.alle.san.musicplayer.models.FolderModel;
 import com.alle.san.musicplayer.models.MusicFile;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -15,6 +16,7 @@ import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 
 import static com.alle.san.musicplayer.util.Globals.ALBUMS_FRAGMENT_TAG;
@@ -28,6 +30,7 @@ import static com.alle.san.musicplayer.util.Globals.ORDER;
 import static com.alle.san.musicplayer.util.Globals.PLAYLIST_KEY;
 import static com.alle.san.musicplayer.util.Globals.POSITION_KEY;
 import static com.alle.san.musicplayer.util.Globals.REPEAT_KEY;
+import static com.alle.san.musicplayer.util.Globals.SHUFFLED_KEY;
 import static com.alle.san.musicplayer.util.Globals.SHUFFLE_KEY;
 import static com.alle.san.musicplayer.util.Globals.SONGS_KEY;
 import static com.alle.san.musicplayer.util.Globals.SORT_ORDER;
@@ -36,8 +39,8 @@ import static com.alle.san.musicplayer.util.Globals.WIDGET_ID;
 public class StorageUtil {
     private static SharedPreferences preferences;
 
-    public static HashSet<String> getSongFolders(File file){
-        HashSet<String> songsList = new HashSet<>();
+    public static HashSet<File> getSongFolders(File file){
+        HashSet<File> songsList = new HashSet<>();
         ArrayList<String> folderNames = new ArrayList<>();
         File [] directoryFiles = file.listFiles();
         if (directoryFiles!= null) {
@@ -45,8 +48,8 @@ public class StorageUtil {
                 String fileName = file1.getName();
                 if (fileName.endsWith(".mp3") || fileName.endsWith(".m4a") ||
                         fileName.endsWith(".wav") || fileName.endsWith(".acc") && !folderNames.contains(file.getName())) {
-                    if (file.getName().length() > 1)songsList.add(file.getName());
-                    folderNames.add(file.getName());
+                    if (file.getName().length() > 1)songsList.add(file);
+                    folderNames.add(file.getAbsolutePath());
 
                 }
                 if (file1.isDirectory() && !file1.isHidden()) {
@@ -242,7 +245,7 @@ public class StorageUtil {
         editor.apply();
     }
 
-    public static void setFolders(ArrayList<ArtistModel> song, Context context) {
+    public static void setFolders(ArrayList<FolderModel> song, Context context) {
         preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         Gson gson = new Gson();
@@ -251,11 +254,11 @@ public class StorageUtil {
         editor.apply();
     }
 
-    public static ArrayList<ArtistModel> getFolders(Context context) {
+    public static ArrayList<FolderModel> getFolders(Context context) {
         preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
         Gson gson = new Gson();
         String json = preferences.getString(FOLDERS_FRAGMENT_TAG, null);
-        Type type = new TypeToken<ArrayList<ArtistModel>>() {
+        Type type = new TypeToken<ArrayList<FolderModel>>() {
         }.getType();
         return gson.fromJson(json, type);
     }
@@ -303,6 +306,27 @@ public class StorageUtil {
         Type type = new TypeToken<ArrayList<MusicFile>>() {
         }.getType();
         return gson.fromJson(json, type);
+    }
+
+    public static ArrayList<MusicFile> getShuffledSongs(Context context) {
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = preferences.getString(SHUFFLED_KEY, null);
+        Type type = new TypeToken<ArrayList<MusicFile>>() {
+        }.getType();
+        return gson.fromJson(json, type);
+    }
+
+    public static ArrayList<MusicFile> shufflePlayingSongs(Context context) {
+        ArrayList<MusicFile> shuffledSongs = getPlayingSongs(context);
+        Collections.shuffle(shuffledSongs);
+        preferences = context.getSharedPreferences(AUDIO_PLAYER_STORAGE, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(shuffledSongs);
+        editor.putString(SHUFFLED_KEY, json);
+        editor.apply();
+        return shuffledSongs;
     }
 
     public static boolean isShuffle(Context context){
@@ -391,6 +415,7 @@ public class StorageUtil {
         editor.putString(WIDGET_ID, json);
         editor.apply();
     }
+
     public static void deleteAllWidgetIds( Context context ) {
         ArrayList<Integer> arrayList = getWidgetIds(context);
         if (arrayList == null) return;

@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.alle.san.musicplayer.adapters.ArtistRvAdapter;
 import com.alle.san.musicplayer.models.ArtistModel;
+import com.alle.san.musicplayer.models.FolderModel;
 import com.alle.san.musicplayer.util.StorageUtil;
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import static com.alle.san.musicplayer.util.Globals.FOLDERS_FRAGMENT_TAG;
 
 public class  FoldersFragment extends Fragment implements SharedPreferences.OnSharedPreferenceChangeListener{
     RecyclerView rvArtistList;
-    private ArrayList<ArtistModel> allFolders;
+    private ArrayList<FolderModel> allFolders;
     SharedPreferences preferences;
     private ArtistRvAdapter artistRvAdapter;
 
@@ -54,11 +55,11 @@ public class  FoldersFragment extends Fragment implements SharedPreferences.OnSh
         artistRvAdapter = new ArtistRvAdapter(getContext(), FOLDERS_FRAGMENT_TAG);
         rvArtistList.setLayoutManager(new GridLayoutManager(getContext(), 2));
         rvArtistList.setAdapter(artistRvAdapter);
-        artistRvAdapter.setArtists(allFolders);
+        artistRvAdapter.setFolders(allFolders);
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        artistRvAdapter.setArtists(allFolders);
+        artistRvAdapter.setFolders(allFolders);
     }
 }

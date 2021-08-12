@@ -71,6 +71,7 @@ public class MinimizedPlayerFragment extends Fragment implements ServiceConnecti
                 }
             }else {
                 musicServiceCallbacks.startMusicService();
+                musicServiceCallbacks.bindMusicService(this);
             }
 
         });
@@ -116,7 +117,6 @@ public class MinimizedPlayerFragment extends Fragment implements ServiceConnecti
     }
 
 
-
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         musicService = ((MusicService.MusicBinder) service).getService();
@@ -133,7 +133,6 @@ public class MinimizedPlayerFragment extends Fragment implements ServiceConnecti
     public void onResume() {
         super.onResume();
         musicServiceCallbacks.bindMusicService(this);
-        playPauseButton();
         preferences.registerOnSharedPreferenceChangeListener(this);
     }
 

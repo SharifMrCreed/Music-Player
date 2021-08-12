@@ -24,7 +24,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.alle.san.musicplayer.adapters.SongRecyclerAdapter;
 import com.alle.san.musicplayer.models.ArtistModel;
+import com.alle.san.musicplayer.models.FolderModel;
 import com.alle.san.musicplayer.models.MusicFile;
+import com.alle.san.musicplayer.models.MyModels;
 import com.alle.san.musicplayer.util.Globals;
 import com.alle.san.musicplayer.util.StorageUtil;
 import com.bumptech.glide.Glide;
@@ -49,7 +51,9 @@ public class AlbumSongListFragment extends Fragment {
     CollapsingToolbarLayout collapsingToolbarLayout;
 
     MusicFile song;
+    MyModels models;
     ArtistModel artist;
+    FolderModel folder;
     String playlistName;
     String extra;
 
@@ -62,7 +66,15 @@ public class AlbumSongListFragment extends Fragment {
             extra = bundle.getString(STRING_EXTRA);
             if (extra.equals(ALBUMS_FRAGMENT_TAG)) song = bundle.getParcelable(ALBUMS_FRAGMENT_TAG);
             else if (extra.equals(PLAYLIST_FRAGMENT_TAG)) playlistName = bundle.getString(ALBUMS_FRAGMENT_TAG);
-            else artist = bundle.getParcelable(ALBUMS_FRAGMENT_TAG);
+            else {
+                if (bundle.getParcelable(ALBUMS_FRAGMENT_TAG).getClass().equals(ArtistModel.class)){
+                    artist = bundle.getParcelable(ALBUMS_FRAGMENT_TAG);
+                    models = artist;
+                }else {
+                    folder = bundle.getParcelable(ALBUMS_FRAGMENT_TAG);
+                    models = folder;
+                }
+            }
             bundle.clear();
 
         }
@@ -153,29 +165,32 @@ public class AlbumSongListFragment extends Fragment {
             imageView3 = view.findViewById(R.id.album_photo3);
             imageView4 = view.findViewById(R.id.album_photo4);
             LinearLayout ll = view.findViewById(R.id.ll);
-            imageRetriever(artist.getPic1());
-            albumToolBar.setTitle(artist.getName());
+            imageRetriever(models.getPic1());
             if (extra.equals(FOLDERS_FRAGMENT_TAG)) {
-                recyclerView.setAdapter(new SongRecyclerAdapter(StorageUtil.getSongsFromFolder(context, artist.getName())));
-            } else recyclerView.setAdapter(new SongRecyclerAdapter(getArtistSongs()));
-            if (artist.getPic2() == null) {
+                albumToolBar.setTitle(folder.getName().getName());
+                recyclerView.setAdapter(new SongRecyclerAdapter(StorageUtil.getSongsFromFolder(context, folder.getName().getAbsolutePath())));
+            } else {
+                albumToolBar.setTitle(artist.getName());
+                recyclerView.setAdapter(new SongRecyclerAdapter(getArtistSongs()));
+            }
+            if (models.getPic2() == null) {
                 imageView2.setVisibility(View.GONE);
                 imageView3.setVisibility(View.GONE);
                 imageView4.setVisibility(View.GONE);
                 ll.setWeightSum(1);
-            } else if (artist.getPic3() == null) {
+            } else if (models.getPic3() == null) {
                 imageView3.setVisibility(View.GONE);
                 imageView4.setVisibility(View.GONE);
                 ll.setWeightSum(2);
-            } else if (artist.getPic4() == null) {
+            } else if (models.getPic4() == null) {
                 imageView4.setVisibility(View.GONE);
                 ll.setWeightSum(3);
             }
             new Thread(()->{
                 Bitmap bitmap2, bitmap3, bitmap4;
-                bitmap2 = Globals.albumBitmap(context, artist.getPic2());
-                bitmap3 = Globals.albumBitmap(context, artist.getPic3());
-                bitmap4 = Globals.albumBitmap(context, artist.getPic4());
+                bitmap2 = Globals.albumBitmap(context, models.getPic2());
+                bitmap3 = Globals.albumBitmap(context, models.getPic3());
+                bitmap4 = Globals.albumBitmap(context, models.getPic4());
                 imageView2.post(() -> {
                     Glide.with(this).load(bitmap2).into(imageView2);
                     Glide.with(this).load(bitmap3).into(imageView3);

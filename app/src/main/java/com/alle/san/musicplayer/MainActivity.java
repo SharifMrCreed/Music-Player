@@ -37,7 +37,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.alle.san.musicplayer.models.ArtistModel;
+import com.alle.san.musicplayer.models.FolderModel;
 import com.alle.san.musicplayer.models.MusicFile;
+import com.alle.san.musicplayer.models.MyModels;
 import com.alle.san.musicplayer.util.Globals;
 import com.alle.san.musicplayer.util.MusicService;
 import com.alle.san.musicplayer.util.StorageUtil;
@@ -45,6 +47,7 @@ import com.alle.san.musicplayer.util.UtilInterfaces;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.navigation.NavigationView;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -54,6 +57,7 @@ import static com.alle.san.musicplayer.util.Globals.ALBUMS_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.ALBUM_SONG_LIST_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.ARTISTS_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.CURRENT_SONG;
+import static com.alle.san.musicplayer.util.Globals.CURRENT_SONGS_FRAGMENT_TAG;
 import static com.alle.san.musicplayer.util.Globals.FACEBOOK_URL;
 import static com.alle.san.musicplayer.util.Globals.FAVORITES;
 import static com.alle.san.musicplayer.util.Globals.FOLDERS_FRAGMENT_TAG;
@@ -111,8 +115,8 @@ UtilInterfaces.ContactThrough, UtilInterfaces.songPopUpMenu {
     }
     
     private void initViewPaging() {
-        if (songListFragment == null) songListFragment = new SongListFragment();
-        initFragment(songListFragment, SONG_LIST_FRAGMENT_TAG);
+        initSongListFragment(SONG_LIST_FRAGMENT_TAG);
+        actionBar.setTitle(SONG_LIST_FRAGMENT_TAG);
         filter = songListFragment;
         getAlbums(StorageUtil.getSongsFromStorage(this, StorageUtil.getSortOrder(this), Globals.getOrder(this) ));
         getArtists(StorageUtil.getSongsFromStorage(this, StorageUtil.getSortOrder(this), Globals.getOrder(this)));
@@ -166,20 +170,22 @@ UtilInterfaces.ContactThrough, UtilInterfaces.songPopUpMenu {
     }
 
     private void getFolders() {
-        ArrayList<ArtistModel> artists = new ArrayList<>();
+        ArrayList<FolderModel> artists = new ArrayList<>();
         new Thread(() -> {
-            HashSet<String> folders = StorageUtil.getSongFolders(Environment.getExternalStorageDirectory());
-            for (String folderName: folders){
-                ArrayList<MusicFile> one = StorageUtil.getSongsFromFolder(this, folderName);
-                ArtistModel artistModel = new ArtistModel();
+            HashSet<File> folders = StorageUtil.getSongFolders(Environment.getExternalStorageDirectory());
+            for (File folder: folders){
+                ArrayList<MusicFile> one = StorageUtil.getSongsFromFolder(this, folder.getAbsolutePath());
+                if (one.isEmpty()) continue;
+                FolderModel artistModel;
                 if (one.size() == 1)
-                    artistModel = new ArtistModel(folderName, one.get(0).getData(), null, null, null);
+                    artistModel = new FolderModel(folder, one.get(0).getData(), null, null, null);
                 else if (one.size() == 2)
-                    artistModel = new ArtistModel(folderName, one.get(0).getData(), one.get(1).getData(), null, null);
+                    artistModel = new FolderModel(folder, one.get(0).getData(), one.get(1).getData(), null, null);
                 else if (one.size() == 3)
-                    artistModel = new ArtistModel(folderName, one.get(0).getData(), one.get(1).getData(), one.get(2).getData(), null);
-                else if (one.size() > 3)
-                    artistModel = new ArtistModel(folderName, one.get(0).getData(), one.get(1).getData(), one.get(2).getData(), one.get(3).getData());
+                    artistModel = new FolderModel(folder, one.get(0).getData(), one.get(1).getData(), one.get(2).getData(), null);
+                else {
+                    artistModel = new FolderModel(folder, one.get(0).getData(), one.get(1).getData(), one.get(2).getData(), one.get(3).getData());
+                }
                 artists.add(artistModel);
             }
             StorageUtil.setFolders(artists, this);
@@ -321,13 +327,19 @@ UtilInterfaces.ContactThrough, UtilInterfaces.songPopUpMenu {
     }
 
     @Override
-    public void changeFragment(ArtistModel artistModel, String tag) {
+    public void changeFragment(MyModels artistModel, String tag) {
         if (albumSongListFragment == null) {
             albumSongListFragment = new AlbumSongListFragment();
         }
         actionBar.hide();
         Bundle args = new Bundle();
-        args.putParcelable(ALBUMS_FRAGMENT_TAG, artistModel);
+        if (artistModel.getClass().equals(ArtistModel.class)){
+            ArtistModel am = (ArtistModel) artistModel;
+            args.putParcelable(ALBUMS_FRAGMENT_TAG, am);
+        }else {
+            FolderModel am = (FolderModel) artistModel;
+            args.putParcelable(ALBUMS_FRAGMENT_TAG, am);
+        }
         args.putString(STRING_EXTRA, tag);
         albumSongListFragment.setArguments(args);
         initFragment(albumSongListFragment, ALBUM_SONG_LIST_FRAGMENT_TAG);
@@ -353,8 +365,20 @@ UtilInterfaces.ContactThrough, UtilInterfaces.songPopUpMenu {
             playSongIntent = new Intent(this, PlaySongActivity.class);
         }
         playSongIntent.putExtra(Globals.POSITION_KEY, StorageUtil.getPosition(this));
-        playSongIntent.putExtra(Globals.SONGS_KEY, StorageUtil.getPlayingSongs(this));
+        playSongIntent.putExtra(Globals.SONGS_KEY,
+                StorageUtil.isShuffle(this)? StorageUtil.getShuffledSongs(this) : StorageUtil.getPlayingSongs(this));
         startActivity(playSongIntent);
+    }
+
+    void initSongListFragment(String tag){
+        songListFragment = new SongListFragment();
+        Bundle args = new Bundle();
+        args.putString(CURRENT_SONG, tag);
+        songListFragment.setArguments(args);
+        FragmentTransaction transaction = fm.beginTransaction();
+        transaction.replace(fragmentContainer, songListFragment, SONG_LIST_FRAGMENT_TAG);
+        transaction.addToBackStack(SONG_LIST_FRAGMENT_TAG);
+        transaction.commit();
     }
 
     private void initNavigationView() {
@@ -362,17 +386,11 @@ UtilInterfaces.ContactThrough, UtilInterfaces.songPopUpMenu {
             if (!actionBar.isShowing()) actionBar.show();
             switch (item.getItemId()) {
                 case (R.id.nav_all_songs):
-                    initFragment(songListFragment, SONG_LIST_FRAGMENT_TAG);
+                    initSongListFragment(SONG_LIST_FRAGMENT_TAG);
+                    actionBar.setTitle(SONG_LIST_FRAGMENT_TAG);
                     break;
                 case (R.id.nav_current_songs):
-                    songListFragment = new SongListFragment();
-                    Bundle args = new Bundle();
-                    args.putString(CURRENT_SONG, CURRENT_SONG);
-                    songListFragment.setArguments(args);
-                    FragmentTransaction transaction = fm.beginTransaction();
-                    transaction.replace(fragmentContainer, songListFragment, SONG_LIST_FRAGMENT_TAG);
-                    transaction.addToBackStack(SONG_LIST_FRAGMENT_TAG);
-                    transaction.commit();
+                    initSongListFragment(CURRENT_SONGS_FRAGMENT_TAG);
                     actionBar.setTitle(getString(R.string.currently_playing));
                     break;
                 case (R.id.nav_albums):

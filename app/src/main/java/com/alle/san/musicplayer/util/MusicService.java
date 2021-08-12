@@ -29,6 +29,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.media.MediaBrowserServiceCompat;
+import androidx.media.session.MediaButtonReceiver;
 
 import com.alle.san.musicplayer.PlaySongActivity;
 import com.alle.san.musicplayer.R;
@@ -37,7 +38,6 @@ import com.alle.san.musicplayer.models.MusicFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import static com.alle.san.musicplayer.util.Globals.ACTION_NEXT;
 import static com.alle.san.musicplayer.util.Globals.ACTION_PAUSE;
@@ -54,11 +54,7 @@ import static com.alle.san.musicplayer.util.Globals.POSITION_KEY;
 public class MusicService extends MediaBrowserServiceCompat implements MediaPlayer.OnCompletionListener, AudioManager.OnAudioFocusChangeListener {
     private static final String TAG = "MusicService";
     UtilInterfaces.Buttons buttonControls;
-    ArrayList<MusicFile> songs = new ArrayList<>();
-    ArrayList<MusicFile> previousPlaylist = new ArrayList<>();
     MediaPlayer mediaPlayer;
-    private int resumePosition = 0;
-    private boolean ongoingCall = false;
     private PhoneStateListener phoneStateListener;
     private TelephonyManager telephonyManager;
     private AudioManager audioManager;
@@ -66,10 +62,24 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
     private PlaybackStatus playbackStatus;
     private MediaControllerCompat.TransportControls transportControls;
 
+    ArrayList<MusicFile> songs = new ArrayList<>();
+    ArrayList<MusicFile> previousPlaylist = new ArrayList<>();
+    private int resumePosition = 0;
+    private boolean ongoingCall = false;
+    public static final int REPEAT_NONE = 0;
+    public static final int REPEAT_ONE = 1;
+    public static final int REPEAT_ALL = 2;
+    private int mRepeating = REPEAT_NONE;
+    private static final long PLAYBACK_ACTIONS = PlaybackStateCompat.ACTION_PAUSE
+            | PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_STOP
+            | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
+    public static final int PLAYBACK_PLAY = 0;
+    public static final int PLAYBACK_PAUSE = 1;
+    public static final int PLAYBACK_STOP = 2;
+
     IBinder binder = new MusicBinder();
     int position;
     MusicFile previousSong = new MusicFile();
-
 
 
     @Nullable
@@ -108,13 +118,16 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         if (!requestAudioFocus()) stopSelf();
         else checkAndPlay();
         if (buttonControls != null) handleIncomingActions(intent);
+        MediaButtonReceiver.handleIntent(mediaSession, intent);
         return START_STICKY;
     }
 
     void checkAndPlay() {
-        songs = StorageUtil.getPlayingSongs(getApplicationContext());
+        if (!StorageUtil.isShuffle(getApplicationContext()))
+            songs = StorageUtil.getPlayingSongs(getApplicationContext());
+        else songs = StorageUtil.getShuffledSongs(getApplicationContext());
         if ((position != -1) && !songs.isEmpty()) {
-            if (!previousSong.equals(songs.get(position)) || previousSong.equals(songs.get(position)) && !songs.equals(previousPlaylist)) {
+            if (!previousSong.equals(songs.get(position)) && !songs.equals(previousPlaylist)) {
                 initMediaPlayer(position);
             } else if (resumePosition != 0) resumeMediaPlayer(position);
         }
@@ -123,6 +136,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
     void initMediaPlayer(int pos) {
         buildNotification(PlaybackStatus.PLAYING);
         updateMetaData();
+        publishState(PLAYBACK_PLAY);
         previousSong = songs.get(pos);
         previousPlaylist = songs;
         createMediaPlayer(pos);
@@ -176,13 +190,8 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
     }
 
     public void playNextSong() {
-        if (StorageUtil.isShuffle(getApplicationContext())) {
-            startShuffle();
-        } else if (position == (songs.size() - 1)) {
-            position = 0;
-        } else {
-            position++;
-        }
+        if (position == (songs.size() - 1)) position = 0;
+        else position++;
         StorageUtil.setPosition(position, getApplicationContext());
         StorageUtil.setCurrentSong(songs.get(position), getApplicationContext());
         if (buttonControls != null) buttonControls.playSong(songs.get(position), position);
@@ -196,9 +205,6 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
     }
 
     public void playPreviousSong() {
-        if (StorageUtil.isShuffle(getApplicationContext())) {
-            startShuffle();
-        }
         if (position == 0) {
             position = (songs.size() - 1);
         } else {
@@ -209,15 +215,6 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         if (buttonControls != null) buttonControls.playSong(songs.get(position), position);
     }
 
-    private void startShuffle() {
-        Random random = new Random();
-        int size = songs.size();
-        if (size > 1) position = random.nextInt((size - 1));
-        else position = 0;
-        notifyRemoteViews();
-        StorageUtil.setPosition(position, getApplicationContext());
-
-    }
 
     public void initButtonControls(Context context) {
         buttonControls = (UtilInterfaces.Buttons) context;
@@ -267,7 +264,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
 
         // Enable callbacks from MediaButtons and TransportControls
         mediaSession.setFlags(
-                        MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
+                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
                         MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
 
         // Set an initial PlaybackState with ACTION_PLAY, so media buttons can start the player
@@ -279,7 +276,6 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         // Set the session's token so that client activities can communicate with it.
         setSessionToken(mediaSession.getSessionToken());
         transportControls = mediaSession.getController().getTransportControls();
-        mediaSession.setActive(true);
 
         mediaSession.setCallback(new MediaSessionCompat.Callback() {
             @Override
@@ -311,6 +307,7 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
             @Override
             public void onStop() {
                 removeNotification();
+                publishState(PLAYBACK_STOP);
                 stopSelf();
             }
 
@@ -319,12 +316,36 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
                 super.onSeekTo(position);
             }
         });
+
+        mediaSession.setActive(true);
     }
+
+    protected void publishState(int state) {
+        if (mediaSession == null)
+            return;
+        PlaybackStateCompat.Builder bob = new PlaybackStateCompat.Builder();
+        bob.setActions(PLAYBACK_ACTIONS);
+        switch (state) {
+            case PLAYBACK_PLAY:
+                bob.setState(PlaybackStateCompat.STATE_PLAYING, -1, 1);
+                break;
+            case PLAYBACK_STOP:
+                bob.setState(PlaybackStateCompat.STATE_STOPPED, -1, 0);
+                break;
+            default:
+                bob.setState(PlaybackStateCompat.STATE_PAUSED, -1, 0);
+        }
+        PlaybackStateCompat pbState = bob.build();
+        mediaSession.setPlaybackState(pbState);
+        mediaSession.setActive(state != PlaybackStateCompat.STATE_STOPPED);
+    }
+
 
     public void pausePlayback() {
         if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
             buildNotification(PlaybackStatus.PAUSED);
+            publishState(PLAYBACK_PAUSE);
         }
         if (buttonControls != null) buttonControls.songPause();
     }
@@ -565,6 +586,11 @@ public class MusicService extends MediaBrowserServiceCompat implements MediaPlay
         if (mediaPlayer != null) {
             stop();
             mediaPlayer.release();
+        }
+        publishState(PLAYBACK_STOP);
+        if (mediaSession != null) {
+            mediaSession.setActive(false);
+            mediaSession.release();
         }
         removeAudioFocus();
         //Disable the PhoneStateListener

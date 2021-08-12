@@ -17,6 +17,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.alle.san.musicplayer.R;
 import com.alle.san.musicplayer.models.ArtistModel;
+import com.alle.san.musicplayer.models.FolderModel;
+import com.alle.san.musicplayer.models.MyModels;
 import com.alle.san.musicplayer.util.Globals;
 import com.alle.san.musicplayer.util.UtilInterfaces;
 import com.bumptech.glide.Glide;
@@ -31,6 +33,7 @@ public class ArtistRvAdapter extends RecyclerView.Adapter<ArtistRvAdapter.Artist
 
     Context context;
     ArrayList<ArtistModel> artists = new ArrayList<>();
+    ArrayList<FolderModel> folders = new ArrayList<>();
     String category;
     UtilInterfaces.ViewChanger utilInterfaces;
 
@@ -40,8 +43,12 @@ public class ArtistRvAdapter extends RecyclerView.Adapter<ArtistRvAdapter.Artist
     }
 
     public void setArtists(ArrayList<ArtistModel> artists) {
-        if (artists == null) artists = new ArrayList<>();
         this.artists = artists;
+        notifyDataSetChanged();
+    }
+
+    public void setFolders(ArrayList<FolderModel> folders) {
+        this.folders = folders;
         notifyDataSetChanged();
     }
 
@@ -49,7 +56,7 @@ public class ArtistRvAdapter extends RecyclerView.Adapter<ArtistRvAdapter.Artist
     @Override
     public ArtistViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.rv_artist_item, parent, false);
-        return new ArtistViewHolder(view, artists, utilInterfaces, context, category);
+        return new ArtistViewHolder(view, artists, folders,  utilInterfaces, context, category);
     }
 
     @Override
@@ -59,7 +66,8 @@ public class ArtistRvAdapter extends RecyclerView.Adapter<ArtistRvAdapter.Artist
 
     @Override
     public int getItemCount() {
-        return artists.size();
+        if (!artists.isEmpty()) return artists.size();
+        else return folders.size();
     }
 
     public static class ArtistViewHolder extends RecyclerView.ViewHolder {
@@ -71,13 +79,15 @@ public class ArtistRvAdapter extends RecyclerView.Adapter<ArtistRvAdapter.Artist
         CardView cardView;
         String category;
         LinearLayoutCompat linearLayout;
-        ArrayList<ArtistModel> albums;
+        ArrayList<ArtistModel> artists;
+        ArrayList<FolderModel> folders;
         Context context;
         UtilInterfaces.ViewChanger utilInterfaces;
 
-        public ArtistViewHolder(@NonNull View itemView, ArrayList<ArtistModel> albums, UtilInterfaces.ViewChanger utilInterfaces, Context context, String category) {
+        public ArtistViewHolder(@NonNull View itemView, ArrayList<ArtistModel> artists, ArrayList<FolderModel> folders, UtilInterfaces.ViewChanger utilInterfaces, Context context, String category) {
             super(itemView);
-            this.albums = albums;
+            this.artists = artists;
+            this.folders = folders;
             this.utilInterfaces = utilInterfaces;
             this.context = context;
             this.category = category;
@@ -91,16 +101,24 @@ public class ArtistRvAdapter extends RecyclerView.Adapter<ArtistRvAdapter.Artist
         }
 
         public void bindAlbum(int position) {
-            ArtistModel musicFile = albums.get(position);
-            imageRetriever(musicFile);
-            artistName.setText(musicFile.getName());
-            linearLayout.setOnClickListener(view -> utilInterfaces.changeFragment(musicFile, category == null ? ARTISTS_FRAGMENT_TAG : FOLDERS_FRAGMENT_TAG));
+            if (!artists.isEmpty()) {
+                ArtistModel musicFile = artists.get(position);
+                imageRetriever(musicFile);
+                artistName.setText(musicFile.getName());
+                linearLayout.setOnClickListener(view -> utilInterfaces.changeFragment(musicFile, category == null ? ARTISTS_FRAGMENT_TAG : FOLDERS_FRAGMENT_TAG));
 
+            } else{
+                FolderModel musicFile = folders.get(position);
+                imageRetriever(musicFile);
+                artistName.setText(musicFile.getName().getName());
+                linearLayout.setOnClickListener(view -> utilInterfaces.changeFragment(musicFile, category == null ? ARTISTS_FRAGMENT_TAG : FOLDERS_FRAGMENT_TAG));
+
+            }
         }
 
 
-        private void imageRetriever(ArtistModel artist) {
-            new Thread(()->{
+        private void imageRetriever(MyModels artist) {
+            new Thread(() -> {
                 Bitmap bitmap2, bitmap3, bitmap4;
                 bitmap2 = Globals.albumBitmap(context, artist.getPic1());
                 bitmap3 = Globals.albumBitmap(context, artist.getPic2());

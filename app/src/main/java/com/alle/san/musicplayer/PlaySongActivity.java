@@ -7,9 +7,12 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -18,13 +21,19 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.palette.graphics.Palette;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.alle.san.musicplayer.adapters.SongRecyclerAdapter;
+import com.alle.san.musicplayer.models.ArtistModel;
 import com.alle.san.musicplayer.models.MusicFile;
+import com.alle.san.musicplayer.models.MyModels;
 import com.alle.san.musicplayer.util.Globals;
 import com.alle.san.musicplayer.util.MusicService;
 import com.alle.san.musicplayer.util.StorageUtil;
 import com.alle.san.musicplayer.util.UtilInterfaces;
 import com.bumptech.glide.Glide;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.jackandphantom.blurimage.BlurImage;
 
 import java.util.ArrayList;
@@ -33,13 +42,14 @@ import static com.alle.san.musicplayer.util.Globals.POSITION_KEY;
 import static com.alle.san.musicplayer.util.Globals.SONGS_KEY;
 import static com.alle.san.musicplayer.util.Globals.WIDGET_ID;
 
-public class PlaySongActivity extends AppCompatActivity implements UtilInterfaces.Buttons, ServiceConnection {
+public class PlaySongActivity extends AppCompatActivity implements UtilInterfaces.Buttons, ServiceConnection, UtilInterfaces.ViewChanger,
+        UtilInterfaces.songPopUpMenu{
 
     TextView songName, artistName, currentTime, albumName, totalTime;
     RelativeLayout parentLayout, parentLayout2, linearLayout;
     SeekBar seekBar;
     RelativeLayout parentCard;
-    ImageView nextButton, previousButton, shuffleButton, backButton, repeatButton, albumImage, pauseButton, listButton;
+    ImageView nextButton, previousButton, listButton, backButton, shuffleButton, repeatButton, albumImage, pauseButton;
 
     ArrayList<MusicFile> songs;
     MusicService musicService;
@@ -71,6 +81,7 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
         shuffleButton = findViewById(R.id.shuffle_button);
 
         //initialize Variables
+        bindMusicService(this);
         songs = getIntent().getParcelableArrayListExtra(SONGS_KEY);
         StorageUtil.setPlayingSongs(songs, getApplicationContext());
         StorageUtil.setPosition(getIntent().getIntExtra(POSITION_KEY, 0), this);
@@ -98,6 +109,8 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
             }
         });
 
+        listButton.setOnClickListener(v -> openPlayingSongs());
+
         pauseButton.setOnClickListener(view -> songPlayPause());
 
         previousButton.setOnClickListener(view -> musicService.playPreviousSong());
@@ -106,14 +119,21 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
 
         backButton.setOnClickListener(view -> onBackPressed());
 
+
+
         shuffleButton.setOnClickListener(view -> {
             StorageUtil.setShuffle(this);
             if (musicService != null) musicService.notifyRemoteViews();
 
-            if (StorageUtil.isShuffle(this)) Glide.with(this).load(
+            if (StorageUtil.isShuffle(this)){ Glide.with(this).load(
                     R.drawable.shuffle_icon_on)
                     .into(shuffleButton);
-            else Glide.with(this).load(R.drawable.shuffle_icon).into(shuffleButton);
+            songs = StorageUtil.shufflePlayingSongs(this);
+            }
+            else {
+                Glide.with(this).load(R.drawable.shuffle_icon).into(shuffleButton);
+                songs = StorageUtil.getPlayingSongs(this);
+            }
 
         });
 
@@ -126,6 +146,19 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
             else Glide.with(this).load(R.drawable.repeat_icon).into(repeatButton);
         });
 
+    }
+
+    private void openPlayingSongs() {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme);
+        View view = LayoutInflater.from(this).inflate(R.layout.current_songs_bottom_sheet,
+                findViewById(R.id.parent), false);
+        RecyclerView recyclerView = view.findViewById(R.id.rv_song_list);
+        SongRecyclerAdapter songRecyclerAdapter = new SongRecyclerAdapter(songs);
+        recyclerView.setAdapter(songRecyclerAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
+
+        bottomSheetDialog.setContentView(view);
+        bottomSheetDialog.show();
     }
 
     public void songPlayPause() {
@@ -148,14 +181,14 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
             artistName.setText(currentSong.getArtist());
             albumName.setText(currentSong.getAlbum());
             seekBar.setMax(currentSong.getDuration() / 1000);
-            totalTime.setText(timeFormat(currentSong.getDuration() / 1000));
+            totalTime.setText(Globals.timeFormat(currentSong.getDuration() / 1000));
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (musicService != null) {
                         int playtime = musicService.getCurrentPosition() / 1000;
                         seekBar.setProgress(playtime);
-                        currentTime.setText(timeFormat(playtime));
+                        currentTime.setText(Globals.timeFormat(playtime));
                     }
                     new Handler(getMainLooper()).postDelayed(this, 1000);
                 }
@@ -186,21 +219,6 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
         if (!this.isDestroyed()) Glide.with(this).load(R.drawable.pause_icon).into(pauseButton);
     }
 
-    private String timeFormat(int playtime) {
-        String hoursT = playtime / 60 > 60 ? String.valueOf(playtime / 3600) : null;
-        String minutesT = playtime / 60 > 60 ? String.valueOf((playtime / 60) % 60) : String.valueOf(playtime / 60);
-        String secondsT = String.valueOf(playtime % 60);
-        String timeT;
-        if (hoursT == null)
-            timeT = secondsT.length() == 1 ? minutesT + ":0" + secondsT : minutesT + ":" + secondsT;
-        else {
-            if (minutesT.length() == 1)
-                timeT = secondsT.length() == 1 ? hoursT + ":0" + minutesT + ":0" + secondsT : hoursT + ":0" + minutesT + ":" + secondsT;
-            else
-                timeT = secondsT.length() == 1 ? hoursT + ":" + minutesT + ":0" + secondsT : hoursT + ":" + minutesT + ":" + secondsT;
-        }
-        return timeT;
-    }
 
     private void makePaletteFrom(Bitmap bitmap) {
         Palette.from(bitmap).generate(palette -> {
@@ -268,5 +286,50 @@ public class PlaySongActivity extends AppCompatActivity implements UtilInterface
     public void onPause() {
         super.onPause();
         unbindService(this);
+    }
+
+    @Override
+    public void changeFragment(String tag, ArrayList<MusicFile> songs, int position) {
+        this.songs = songs;
+        StorageUtil.setPlayingSongs(songs, getApplicationContext());
+        StorageUtil.setPosition(position, this);
+        song = songs.get(position);
+        albumArt = Globals.albumBitmap(this, song.getData());
+        initButtons();
+        playSong(song, getIntent().getIntExtra(POSITION_KEY, 0));
+    }
+
+    @Override
+    public void changeFragment(MusicFile musicFile, String tag) {
+
+    }
+
+    @Override
+    public void changeFragment(MyModels artistModel, String tag) {
+
+    }
+
+    @Override
+    public void changeFragment(String playlistName, String tag) {
+
+    }
+
+    @Override
+    public void openPlaySongActivity(MusicFile song) {
+
+    }
+
+    @Override
+    public void shareMusicFile(String id) {
+        Uri uri = Globals.getSongUri(Integer.parseInt(id));
+        Intent share = new Intent(Intent.ACTION_SEND);
+        share.setType("audio/*");
+        share.putExtra(Intent.EXTRA_STREAM, uri);
+        startActivity(Intent.createChooser(share, "Share Sound File"));
+    }
+
+    @Override
+    public void deleteMusicFile(String id) {
+
     }
 }

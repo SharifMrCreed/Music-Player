@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,11 +22,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.alle.san.musicplayer.R;
 import com.alle.san.musicplayer.adapters.PlayListRvAdapter;
 import com.alle.san.musicplayer.models.MusicFile;
+import com.bumptech.glide.Glide;
 
 import java.util.Objects;
 
 public class Globals {
     public static final String  SONG_LIST_FRAGMENT_TAG = "All Songs";
+    public static final String  CURRENT_SONGS_FRAGMENT_TAG = "current songs";
     public static final String  ARTISTS_FRAGMENT_TAG = "Artists";
     public static final String  PLAYLIST_FRAGMENT_TAG = "Playlists";
     public static final String  ALBUM_SONG_LIST_FRAGMENT_TAG = "Album Songs";
@@ -55,6 +58,7 @@ public class Globals {
     public static final String WIDGET_ID = "widgetId";
     public static final String ORDER = "Order";
     public static final String SONGS_KEY = "Songs";
+    public static final String SHUFFLED_KEY = "Songs";
     public static final String CURRENT_SONG = "current song";
     public static final String SHUFFLE_KEY = "shuffle";
     public static final String REPEAT_KEY = "repeat";
@@ -114,6 +118,22 @@ public class Globals {
 
     public static Uri getSongUri(int songId) {
         return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, songId);
+    }
+
+    public static String timeFormat(int playtime) {
+        String hoursT = playtime / 60 > 60 ? String.valueOf(playtime / 3600) : null;
+        String minutesT = playtime / 60 > 60 ? String.valueOf((playtime / 60) % 60) : String.valueOf(playtime / 60);
+        String secondsT = String.valueOf(playtime % 60);
+        String timeT;
+        if (hoursT == null)
+            timeT = secondsT.length() == 1 ? minutesT + ":0" + secondsT : minutesT + ":" + secondsT;
+        else {
+            if (minutesT.length() == 1)
+                timeT = secondsT.length() == 1 ? hoursT + ":0" + minutesT + ":0" + secondsT : hoursT + ":0" + minutesT + ":" + secondsT;
+            else
+                timeT = secondsT.length() == 1 ? hoursT + ":" + minutesT + ":0" + secondsT : hoursT + ":" + minutesT + ":" + secondsT;
+        }
+        return timeT;
     }
 
     public static final String WHATSAPP_URL = "https://wa.me/256705944594/?I%20just%20saw%20your%20Music" +
@@ -191,6 +211,30 @@ public class Globals {
         }
         TextView playlistCount = dialog.findViewById(R.id.playlist_num);
         playlistCount.setText(count);
+        dialog.show();
+    }
+
+    public static void showDetailsDialog(Context context, MusicFile song) {
+        TextView songName, artistName, songLocation, albumName, totalTime;
+        ImageView albumArt;
+        Dialog dialog = new Dialog(context);
+        dialog.setCancelable(true);
+        dialog.setContentView(R.layout.details_dialog);
+
+        albumArt = dialog.findViewById(R.id.album_art);
+        songName = dialog.findViewById(R.id.song_name);
+        albumName = dialog.findViewById(R.id.album_name);
+        artistName = dialog.findViewById(R.id.artist_name);
+        songLocation = dialog.findViewById(R.id.location);
+        totalTime = dialog.findViewById(R.id.duration);
+
+        songName.setText(song.getTitle());
+        artistName.setText(song.getArtist());
+        albumName.setText(song.getAlbum());
+        songLocation.setText(song.getData());
+        totalTime.setText(timeFormat(song.getDuration() / 1000));
+        Glide.with(context).load(Globals.albumBitmap(context, song.getData())).centerCrop().into(albumArt);
+        dialog.setCanceledOnTouchOutside(true);
         dialog.show();
     }
 }
